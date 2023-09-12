@@ -1,0 +1,50 @@
+// 数组测试 --- B
+
+int func1(int a[], int b[][2]) {
+	a[0] = b[0][1] - b[0][0];
+	b[1][1] = a[0];
+	return b[0][0];
+} 
+
+int func2(int c[], int d) {
+	c[0] = d + c[1];
+	return c[0];
+}
+
+int main ( ) {
+	int input_x, input_y, output_x = 0, output_y[2][2];
+	const int student = 21373307 + 0 - (+0), zero = 0; 
+	printf("21373307\n");   // 1
+	input_x = getint();
+	{
+		input_y = getint();
+		printf("sum = ( %d )\n", (1 * input_x) + (input_y));  // 2
+	}
+	{
+		if (!(5==4)) {
+			printf("%d\n", student);      // 3
+		}
+		output_y[0][1] = getint();
+		output_y[0][0] = getint();
+		output_y[1][0+0] = output_y[0][0]*-1*(output_y[0][1]);
+		output_y[1][0+1] = output_y[0][1]*-1*(output_y[1][0]);
+	}
+	printf("0-0 = %d\n", output_y[0][0] + 0*1);  // 4
+	printf("0-1 = %d\n", output_y[0][1] + (((0))) + 1-1);  // 5
+	printf("1-0 = %d\n", output_y[1][0] + zero * zero);  // 6
+	printf("1-1 = %d\n", output_y[1][1] + 0%(1+1*1));  // 7
+	int i = 5;
+	for (i = 5; i > zero; i = i - 1) {
+		int temp;
+		temp = getint();
+		input_y = input_y + -1*(temp);
+	}
+	printf("input_y = %d  input_x * input_y = %d\n", input_y, input_x * input_y); // 8
+	printf("input_y = %d  input_x * input_y = %d\n", input_y, input_x * input_y); // 9
+	printf("test2 -- %d\n", student);  // 10
+	func1(output_y[1], output_y);
+	func2(output_y[0], output_y[1][1]);
+	int temp[1] = {0};
+	func2(temp, temp[0]);
+    return 0;
+}

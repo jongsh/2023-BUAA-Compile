@@ -1,0 +1,58 @@
+// 语句 
+int input[2][3];
+int output[11];
+
+int main ( ) {
+	int i, j, k;
+	printf("21373307\n");
+	const int student = 21373307;
+	for (i = 0; i <= 2; i = i + 1) {
+		if (i - 2 != 0) {
+			for (j = 0; j < 3; j = j + 1) {
+				input[i][j] = getint();
+			}
+		} else {
+			if (!0) {
+				printf("%d %d %d\n", student+student, student, -1*student);
+			}
+			break;
+		}
+	}
+	int result = -9999999;
+	i = 10;
+	//(-1) && (0 != 1 || 1!= 5) && (input[1][2]% 999 * (input[2][0] + input[2][2]))
+	if (1) {
+		for (; i >= 0; i = i - 1) {
+			output[i] = getint();
+			if (i % 2 == 1) {
+				printf("ouch!\n");
+			} else {
+				continue;
+			}
+		}
+	}
+	{
+		i = 10;
+		for (;;) {
+			i = i - 1;
+			if (i < 0) {
+				break;
+			}
+			output[i] = result;
+			result = result + i;
+			
+		}
+		
+	}
+	printf("%d\n",result);
+	if (1);
+	if (!1);
+	{
+		printf("---------------%d-------%d-------------\n", student, student);
+		{
+			printf("test3 -- %d\n", student);
+		}
+	}
+	
+    return 0;
+}

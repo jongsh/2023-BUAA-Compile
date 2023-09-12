@@ -1,0 +1,16 @@
+// 输出 --- C
+
+int main ( ) {
+	printf("21373307\n");
+	printf("a-b-c-d-e-f-g-h-i");
+	printf(""); 
+	printf("\nBUAA");
+	int output1 = 1, output2 = 2, output3 = -3;
+	printf("%d\n", output1 - output2 * -(output3)); 
+	printf("lfsda %d, %d", output2, output3); 
+	printf("----%d-------", output1*(-output1)); 
+	printf("%d%d%d\n", output3,output3,output3); 
+	printf("\n"); 
+	printf("printf"); 
+    return 0;
+}
