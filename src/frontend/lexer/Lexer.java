@@ -1,4 +1,6 @@
-package front;
+package frontend.lexer;
+
+import java.util.ArrayList;
 
 public class Lexer {
     private final String source;                  // input program
@@ -21,6 +23,10 @@ public class Lexer {
 
     public LexType getLexType() {
         return this.lexType;
+    }
+
+    public int getLineNumber() {
+        return this.lineNumber;
     }
 
     public boolean next() {
@@ -123,6 +129,23 @@ public class Lexer {
         lexType = LexType.parse(token);
         curPos++;
         return true;
+    }
+
+    public ArrayList<LexType> foresee(int times) {
+        int curPosTemp = this.curPos;
+        String tokenTemp = this.token;
+        int lineNumberTemp = this.lineNumber;
+        LexType lexTypeTemp = this.lexType;
+        ArrayList<LexType> res = new ArrayList<>();
+        for (int i = 0; i < times; ++i) {
+            this.next();
+            res.add(this.lexType);
+        }
+        this.curPos = curPosTemp;
+        this.token = tokenTemp;
+        this.lineNumber = lineNumberTemp;
+        this.lexType = lexTypeTemp;
+        return res;
     }
 
     /**

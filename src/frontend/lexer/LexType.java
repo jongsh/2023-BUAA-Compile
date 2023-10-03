@@ -1,4 +1,4 @@
-package front;
+package frontend.lexer;
 
 public enum LexType {
     NULL, IDENFR, INTCON, STRCON, MAINTK, CONSTTK,

@@ -1,4 +1,5 @@
-import front.Lexer;
+import frontend.lexer.Lexer;
+import frontend.syntax.Parser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,9 +13,10 @@ public class Compiler {
         String outputFileName = "output.txt";
 
         Lexer lexer = new Lexer(inputFromFile(inputFileName));
+        Parser parser = new Parser(lexer);
 
 
-        outputToFile(outputFileName, lexer.test());
+        outputToFile(outputFileName, parser.test());
 
     }
 
