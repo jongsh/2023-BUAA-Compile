@@ -1,4 +1,5 @@
 import frontend.lexer.Lexer;
+import frontend.semantics.SemanticAnalyzer;
 import frontend.syntax.Parser;
 
 import java.io.File;
@@ -10,13 +11,13 @@ import java.util.Scanner;
 public class Compiler {
     public static void main(String[] args) {
         String inputFileName = "testfile.txt";
-        String outputFileName = "output.txt";
+        String outputFileName = "error.txt";
 
         Lexer lexer = new Lexer(inputFromFile(inputFileName));
         Parser parser = new Parser(lexer);
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(parser.parseCompUnit());
 
-
-        outputToFile(outputFileName, parser.test());
+        outputToFile(outputFileName, semanticAnalyzer.CheckError());
 
     }
 

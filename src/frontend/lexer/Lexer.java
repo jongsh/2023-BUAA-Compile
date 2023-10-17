@@ -3,11 +3,15 @@ package frontend.lexer;
 import java.util.ArrayList;
 
 public class Lexer {
-    private final String source;                  // input program
+    private final String source;                        // input program
     private String token;                               // value of word
     private LexType lexType;                            // type of word
     private int lineNumber;                             // number of line
     private int curPos;                                 // index of source
+    private String tokenCopy = null;
+    private LexType lexTypeCopy = null;
+    private int lineNumberCopy = 0;
+    private int curPosCopy = 0;
 
     public Lexer(String source) {
         this.source = source;
@@ -27,6 +31,20 @@ public class Lexer {
 
     public int getLineNumber() {
         return this.lineNumber;
+    }
+
+    public void store() {
+        curPosCopy = curPos;
+        tokenCopy = token;
+        lineNumberCopy = lineNumber;
+        lexTypeCopy = lexType;
+    }
+
+    public void reStore() {
+        curPos = curPosCopy;
+        token = tokenCopy;
+        lineNumber = lineNumberCopy;
+        lexType = lexTypeCopy;
     }
 
     public boolean next() {
@@ -105,8 +123,12 @@ public class Lexer {
             }
         } else if (source.charAt(curPos) == '"') {
             int nextCurPos = curPos + 1;
-            while (source.charAt(nextCurPos) != '"') {
-                nextCurPos++;
+            int temp = curPos + 1;
+            while (source.charAt(temp) != '\n') {
+                if (source.charAt(temp) == '\"') {
+                    nextCurPos = temp;
+                }
+                temp++;
             }
             token = source.substring(curPos, nextCurPos + 1);
             curPos = nextCurPos;

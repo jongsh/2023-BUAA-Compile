@@ -1,16 +1,41 @@
 package frontend.syntax.AST;
 
+import frontend.semantics.Symbol.SymbolTable;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;
 
 public class Node {
+    protected int line;
     protected SyntaxType type;
-
     protected ArrayList<Node> children;
+
+    public Node(SyntaxType type, int line) {
+        this.type = type;
+        this.children = new ArrayList<>();
+        this.line = line;
+    }
+
+    public Node(SyntaxType type, ArrayList<Node> children) {
+        this.type = type;
+        this.children = children;
+        this.line = children.get(children.size() - 1).getLine();
+    }
 
     public SyntaxType getType() {
         return this.type;
+    }
+
+    public int getLine() {
+        return line;
+    }
+
+    public int size() {
+        return children.size();
+    }
+
+    public String checkError(SymbolTable st) {
+        return "";
     }
 
     @Override
@@ -18,7 +43,7 @@ public class Node {
         StringBuilder sb = new StringBuilder();
         for (Node child : children) {
             if (child != null) {
-                sb.append(child.toString()).append("\n");
+                sb.append(child).append("\n");
             }
         }
         sb.append("<").append(this.type).append(">");
@@ -27,8 +52,8 @@ public class Node {
 
     public Node searchNode(SyntaxType type) {
         Node res;
-        for (Node child : children) {
-            if (child != null) {
+        if (children.size() > 0) {
+            for (Node child : children) {
                 if (child.getType().equals(type)) {
                     return child;
                 }
