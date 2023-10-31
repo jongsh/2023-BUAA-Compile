@@ -2,8 +2,8 @@ package frontend.syntax;
 
 import frontend.lexer.LexType;
 import frontend.lexer.Lexer;
-import frontend.syntax.AST.*;
-import frontend.syntax.AST.Number;
+import frontend.syntax.ast.*;
+import frontend.syntax.ast.Number;
 
 import java.util.ArrayList;
 

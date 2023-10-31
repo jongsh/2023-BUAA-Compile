@@ -1,7 +1,8 @@
 package frontend.semantics;
 
-import frontend.semantics.Symbol.SymbolTable;
-import frontend.syntax.AST.Node;
+import frontend.semantics.symbol.SymbolManager;
+import frontend.semantics.symbol.SymbolTable;
+import frontend.syntax.ast.Node;
 
 public class SemanticAnalyzer {
     private final Node ast;
@@ -11,7 +12,7 @@ public class SemanticAnalyzer {
     }
 
     public String CheckError() {
-        //System.out.println(ast.checkError(new SymbolTable("global", null)));
-        return ast.checkError(new SymbolTable("global", null));
+        SymbolManager.instance().createTable(SymbolTable.TableType.GLOBAL, true);
+        return ast.checkError();
     }
 }
