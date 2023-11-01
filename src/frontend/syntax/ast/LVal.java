@@ -1,7 +1,6 @@
 package frontend.syntax.ast;
 
 import frontend.semantics.symbol.SymbolManager;
-import frontend.semantics.symbol.SymbolTable;
 import frontend.semantics.symbol.VarSymbol;
 import frontend.syntax.SyntaxType;
 
@@ -53,7 +52,7 @@ public class LVal extends Node {
         if (children.size() > 5) {
             index = index * varSymbol.getDimensions().get(1) + ((Exp) children.get(5)).calculate().get(0);
         }
-        values.add(varSymbol.getValue(index));
+        values.add(varSymbol.getInitial(index));
         return values;
     }
 }

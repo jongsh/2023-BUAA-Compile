@@ -1,7 +1,6 @@
 package frontend.syntax.ast;
 
-import frontend.semantics.llvmir.Value;
-import frontend.semantics.symbol.SymbolTable;
+import frontend.semantics.llvmir.value.Value;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;
@@ -67,7 +66,7 @@ public class Node {
     }
 
     public Value genIR() {
-        for (Node child : children) {
+        for (Node child: children) {
             child.genIR();
         }
         return null;

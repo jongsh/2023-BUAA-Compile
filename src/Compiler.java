@@ -14,11 +14,20 @@ public class Compiler {
         String outputFileName = "error.txt";
 
         Lexer lexer = new Lexer(inputFromFile(inputFileName));
+        // 词法分析输出
+        //outputToFile(outputFileName, lexer.test());
+
         Parser parser = new Parser(lexer);
+        // 语法分析输出
+        // outputToFile(outputFileName, parser.test());
+
         SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(parser.parseCompUnit());
 
-        outputToFile(outputFileName, semanticAnalyzer.CheckError());
+        // 错误处理输出
+        //outputToFile(outputFileName, semanticAnalyzer.testCheckError());
 
+        // 中间代码生成
+        outputToFile(outputFileName, semanticAnalyzer.testGenIR());
     }
 
     private static String inputFromFile(String inputPath) {

@@ -1,5 +1,6 @@
 package frontend.syntax.ast;
 
+import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.symbol.SymbolTable;
 import frontend.syntax.SyntaxType;
 
@@ -23,4 +24,5 @@ public class VarDecl extends Node {
         }
         return error.toString();
     }
+
 }

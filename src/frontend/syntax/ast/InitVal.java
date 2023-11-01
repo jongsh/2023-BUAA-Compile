@@ -19,4 +19,18 @@ public class InitVal extends Node {
         }
         return error.toString();
     }
+
+    public ArrayList<Integer> calculate() {
+        ArrayList<Integer> values = new ArrayList<>();
+        if (children.get(0).getType().equals(SyntaxType.LBRACE)) {
+            for (int i = 1; i < children.size(); i += 2) {
+                if (children.get(i) instanceof InitVal) {
+                    values.addAll(((InitVal) children.get(i)).calculate());
+                }
+            }
+        } else {
+            values.addAll(((Exp) children.get(0)).calculate());
+        }
+        return values;
+    }
 }

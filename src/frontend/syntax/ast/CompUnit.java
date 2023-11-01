@@ -1,6 +1,8 @@
 package frontend.syntax.ast;
 
-import frontend.semantics.llvmir.Value;
+import frontend.semantics.llvmir.IRBuilder;
+import frontend.semantics.llvmir.value.Value;
+import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.SymbolTable;
 import frontend.syntax.SyntaxType;
 
@@ -16,9 +18,17 @@ public class CompUnit extends Node {
     @Override
     public String checkError() {
         StringBuilder error = new StringBuilder();
+        SymbolManager.instance().createTable(SymbolTable.TableType.GLOBAL, true);
         for (Node child : children) {
             error.append(child.checkError());
         }
         return error.toString();
+    }
+
+    @Override
+    public Value genIR() {
+        IRBuilder.getInstance().setModule();
+        SymbolManager.instance().createTable(SymbolTable.TableType.GLOBAL, true);
+        return super.genIR();
     }
 }

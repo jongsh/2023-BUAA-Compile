@@ -12,7 +12,7 @@ public class SymbolTable {
     private final SymbolTable prev;
     private final ArrayList<SymbolTable> nexts;
     private final HashMap<String, Symbol> symbols;
-    private String funcName;   // FUNC、MAIN_FUNC 特有属性
+    private final String funcName;   // FUNC、MAIN_FUNC 特有属性
 
     public SymbolTable(TableType type, SymbolTable prev) {
         this.type = type;
@@ -44,6 +44,10 @@ public class SymbolTable {
 
     public SymbolTable getPrev() {
         return prev;
+    }
+
+    public SymbolTable getNext(int index) {
+        return nexts.get(index);
     }
 
     public void addSymbol(Symbol symbol) {

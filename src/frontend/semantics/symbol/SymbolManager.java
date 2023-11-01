@@ -15,6 +15,14 @@ public class SymbolManager {
         this.depth = 0;
     }
 
+    /**
+     * 符号管理系统重置
+     */
+    public void reset() {
+        curTable = null;
+        depth = 0;
+    }
+
     public static SymbolManager instance() {
         return instance;
     }
@@ -70,24 +78,18 @@ public class SymbolManager {
         return (FuncSymbol) tempTable.getSymbol(actualName);
     }
 
-    public void addVarSymbol(boolean isConst, String name, ArrayList<Integer> dimensions, ArrayList<Integer> values) {
-        if (depth == 1 && values == null) {
-            // 全局变量初始化为0
-            values = new ArrayList<>();
-            int total = 1;   // 数组元素个数
-            for (Integer dimension : dimensions) {
-                total *= dimension;
-            }
-            for (int i = 0; i < total; i++) {
-                values.add(0);
-            }
-        }
-        curTable.addSymbol(new VarSymbol(isConst, name, dimensions, values));
+    public VarSymbol addVarSymbol(boolean isConst, String name, ArrayList<Integer> dimensions, ArrayList<Integer> initials) {
+        boolean isUndefined = depth == 1 && initials == null;
+        VarSymbol newSymbol = new VarSymbol(isConst, name, dimensions, initials, isUndefined);
+        curTable.addSymbol(newSymbol);
+        return newSymbol;
     }
 
-    public void addFuncSymbol(String name) {
+    public FuncSymbol addFuncSymbol(String name) {
         String actualName = name + "!";
-        curTable.addSymbol(new FuncSymbol(actualName));
+        FuncSymbol newSymbol = new FuncSymbol(actualName);
+        curTable.addSymbol(newSymbol);
+        return newSymbol;
     }
 
     /**
