@@ -1,9 +1,9 @@
 package frontend.syntax.ast;
 
-import frontend.semantics.symbol.FuncSymbol;
+import frontend.semantics.llvmir.IRBuilder;
+import frontend.semantics.llvmir.value.Param;
+import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.symbol.SymbolManager;
-import frontend.semantics.symbol.SymbolTable;
-import frontend.semantics.symbol.VarSymbol;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;
@@ -41,8 +41,29 @@ public class FuncFParam extends Node {
         if (SymbolManager.instance().getVarSymbol(identName, false) == null) {                // 判断参数名是否已经定义了
             SymbolManager.instance().addVarSymbol(false, identName, lens, null);
         }
-        SymbolManager.instance().addFuncParams(lens);
-
+        SymbolManager.instance().addFuncParam(lens);
         return error.toString();
+    }
+
+    @Override
+    public Value genIR() {
+        // 维护符号表
+        String identName = ((LeafNode) children.get(1)).getContent();
+        ArrayList<Integer> dimensions = new ArrayList<>();  // 函数参数维度
+        if (children.size() > 2) {
+            dimensions.add(0);
+            for (int i = 2; i < children.size(); i++) {
+                if (children.get(i).getType().equals(SyntaxType.ConstExp)) {
+                    dimensions.add(((ConstExp) children.get(i)).calculate().get(0));
+                }
+            }
+        }
+        SymbolManager.instance().addVarSymbol(false, identName, dimensions, null);
+        SymbolManager.instance().addFuncParam(dimensions);
+
+        //
+        Param param = IRBuilder.getInstance().newParam(dimensions);
+        IRBuilder.getInstance().addParam(param);
+        return null;
     }
 }

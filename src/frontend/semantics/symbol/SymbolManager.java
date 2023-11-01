@@ -1,8 +1,5 @@
 package frontend.semantics.symbol;
 
-import frontend.syntax.ast.ConstInitVal;
-import frontend.syntax.ast.FuncFParams;
-
 import java.util.ArrayList;
 
 public class SymbolManager {
@@ -104,7 +101,7 @@ public class SymbolManager {
     /**
      * 函数参数回填
      */
-    public void addFuncParams(ArrayList<Integer> lens) {
+    public void addFuncParam(ArrayList<Integer> lens) {
         String funcName = curTable.getFuncName();
         FuncSymbol funcSymbol = getFuncSymbol(funcName);
         funcSymbol.addParam(lens);

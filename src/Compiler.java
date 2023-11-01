@@ -57,4 +57,7 @@ public class Compiler {
             System.out.println("output get wrong");
         }
     }
+
+    private static void work() {
+    }
 }

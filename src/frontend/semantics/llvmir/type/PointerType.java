@@ -1,9 +1,14 @@
 package frontend.semantics.llvmir.type;
 
-public class PointerType {
-    private ValueType target;
+public class PointerType extends ValueType {
+    private ValueType targetType;
 
-    public PointerType(ValueType target) {
-        this.target = target;
+    public PointerType(ValueType targetType) {
+        this.targetType = targetType;
+    }
+
+    @Override
+    public String toString() {
+        return targetType + "*";
     }
 }

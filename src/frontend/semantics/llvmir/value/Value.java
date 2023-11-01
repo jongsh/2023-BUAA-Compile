@@ -16,8 +16,8 @@ public class Value {
         this.useList = new ArrayList<>();
     }
 
-    public Value() {
-        this.useList = new ArrayList<>();
-    }
+//    public Value() {
+//        this.useList = new ArrayList<>();
+//    }
 
 }

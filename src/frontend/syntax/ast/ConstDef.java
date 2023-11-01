@@ -58,6 +58,7 @@ public class ConstDef extends Node {
         }
         VarSymbol varSymbol = SymbolManager.instance().addVarSymbol(true, identName, dimensions,
                 ((ConstInitVal) children.get(children.size() - 1)).calculate());
+
         // 生成中间代码
         if (SymbolManager.instance().getCurTableType().equals(SymbolTable.TableType.GLOBAL)) {
             GlobalVar globalVar = IRBuilder.getInstance().newGlobalVar(
@@ -66,7 +67,7 @@ public class ConstDef extends Node {
             varSymbol.setLLVMValue(globalVar);
             IRBuilder.getInstance().addGlobalVar(globalVar);
         } else {
-            /* TODO 局部定义*/
+            /** TODO 局部定义 **/
         }
 
         return null;

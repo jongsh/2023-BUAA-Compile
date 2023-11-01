@@ -66,7 +66,7 @@ public class Node {
     }
 
     public Value genIR() {
-        for (Node child: children) {
+        for (Node child : children) {
             child.genIR();
         }
         return null;

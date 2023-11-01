@@ -4,14 +4,14 @@ import frontend.semantics.llvmir.type.Initializable;
 import frontend.semantics.llvmir.type.ValueType;
 
 public class GlobalVar extends Value {
-    private boolean isConst;
+    private final Module prev;
+    private final boolean isConst;
 
-    // 全局普通变量
-    public GlobalVar(boolean isConst, String name, ValueType type) {
+    public GlobalVar(boolean isConst, String name, ValueType type, Module prev) {
         super(name, type);
         this.isConst = isConst;
+        this.prev = prev;
     }
-
 
     @Override
     public String toString() {

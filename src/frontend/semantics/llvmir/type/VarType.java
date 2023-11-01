@@ -3,7 +3,7 @@ package frontend.semantics.llvmir.type;
 public class VarType extends ValueType implements Initializable {
     // void int1 int8 int32
     private final int width;
-    private int initial;
+    private final int initial;
 
     public VarType(int width) {
         this.width = width;

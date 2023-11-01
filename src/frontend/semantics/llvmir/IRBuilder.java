@@ -1,6 +1,8 @@
 package frontend.semantics.llvmir;
 
 import frontend.semantics.llvmir.type.ArrayType;
+import frontend.semantics.llvmir.type.PointerType;
+import frontend.semantics.llvmir.type.ValueType;
 import frontend.semantics.llvmir.type.VarType;
 import frontend.semantics.llvmir.value.*;
 
@@ -44,15 +46,38 @@ public class IRBuilder {
         GlobalVar globalVar;
         if (dimensions.size() == 0) {
             VarType type = new VarType(32, (initials != null) ? initials.get(0) : 0);
-            globalVar = new GlobalVar(isConst, actualName, type);
+            globalVar = new GlobalVar(isConst, actualName, type, module);
         } else {
             ArrayType type = new ArrayType(dimensions, initials);
-            globalVar = new GlobalVar(isConst, actualName, type);
+            globalVar = new GlobalVar(isConst, actualName, type, module);
         }
         return globalVar;
     }
 
     public void addGlobalVar(GlobalVar globalVar) {
         module.addGlobalVar(globalVar);
+    }
+
+    public Function newFunction(String typeStr, String name) {
+        String actualName = (name.equals("main")) ? "@main" : FUNCTION + name;
+        VarType type = (typeStr.equals("int")) ? new VarType(32) : new VarType(0);
+        return new Function(actualName, type, module);
+    }
+
+    public void addFunction(Function function) {
+        pramCnt = 0;
+        module.addFunction(function);
+        curFunction = function;
+    }
+
+    public Param newParam(ArrayList<Integer> dimensions) {
+        String actualName = PARAM + (pramCnt++);
+        ValueType type = (dimensions.size() == 0) ? new VarType(32) :
+                new PointerType(new ArrayType(dimensions));
+        return new Param(actualName, type);
+    }
+
+    public void addParam(Param param) {
+        curFunction.addParam(param);
     }
 }
