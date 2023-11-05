@@ -1,10 +1,13 @@
 package frontend.semantics.symbol;
 
+import frontend.semantics.llvmir.value.Value;
+
 import java.util.ArrayList;
 
 public class FuncSymbol extends Symbol {
     private String type;
     private ArrayList<ArrayList<Integer>> params;
+    private Value LLVMValue;
 
     public FuncSymbol(String name) {
         this.name = name;
@@ -17,6 +20,14 @@ public class FuncSymbol extends Symbol {
 
     public String getType() {
         return type;
+    }
+
+    public void setLLVMValue(Value value) {
+        this.LLVMValue = value;
+    }
+
+    public Value getLLVMValue() {
+        return LLVMValue;
     }
 
     // 一维数组 0，二维数组 0,x

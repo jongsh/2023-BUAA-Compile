@@ -1,5 +1,6 @@
 package frontend.syntax.ast;
 
+import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.symbol.SymbolTable;
 import frontend.syntax.SyntaxType;
 
@@ -10,16 +11,6 @@ public class ConstInitVal extends Node {
         super(SyntaxType.ConstInitVal, children);
     }
 
-    @Override
-    public String checkError() {
-        StringBuilder error = new StringBuilder();
-        for (Node child : children) {
-            error.append(child.checkError());
-        }
-        return error.toString();
-    }
-
-    // ConstInitVal → ConstExp  | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
     public ArrayList<Integer> calculate() {
         ArrayList<Integer> values = new ArrayList<>();
         if (children.get(0).getType().equals(SyntaxType.LBRACE)) {
@@ -32,5 +23,29 @@ public class ConstInitVal extends Node {
             values.addAll(((ConstExp) children.get(0)).calculate());
         }
         return values;
+    }
+
+    @Override
+    public String checkError() {
+        StringBuilder error = new StringBuilder();
+        for (Node child : children) {
+            error.append(child.checkError());
+        }
+        return error.toString();
+    }
+
+    // ConstInitVal → ConstExp  | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
+    public ArrayList<Value> genIRs() {
+        ArrayList<Value> ret = new ArrayList<>();
+        if (children.size() == 1) {
+            ret.add(children.get(0).genIR());
+        } else {
+            for (Node child : children) {
+                if (child instanceof ConstInitVal) {
+                    ret.addAll(((ConstInitVal) child).genIRs());
+                }
+            }
+        }
+        return ret;
     }
 }

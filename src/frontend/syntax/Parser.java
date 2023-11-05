@@ -273,15 +273,15 @@ public class Parser {
             children.add(new LeafNode(SyntaxType.RBRACK, "]", lexer.getLineNumber()));
             lexer.next();
         }
-        if (!lexer.getLexType().equals(LexType.LBRACK)) {
-            return new FuncFParam(children);
-        }
-        children.add(new LeafNode(SyntaxType.LBRACK, "[", lexer.getLineNumber()));
-        lexer.next();
-        children.add(parseConstExp());
-        if (lexer.getLexType().equals(LexType.RBRACK)) {
-            children.add(new LeafNode(SyntaxType.RBRACK, "]", lexer.getLineNumber()));
+
+        while (lexer.getLexType().equals(LexType.LBRACK)) {
+            children.add(new LeafNode(SyntaxType.LBRACK, "[", lexer.getLineNumber()));
             lexer.next();
+            children.add(parseConstExp());
+            if (lexer.getLexType().equals(LexType.RBRACK)) {
+                children.add(new LeafNode(SyntaxType.RBRACK, "]", lexer.getLineNumber()));
+                lexer.next();
+            }
         }
         return new FuncFParam(children);
     }
@@ -350,7 +350,9 @@ public class Parser {
         } else {
             Exp temp = parseExp();
             if (lexer.getLexType().equals(LexType.ASSIGN)) {
-                children.add(temp.searchNode(SyntaxType.LVal));
+                LVal lVal = (LVal) temp.searchNode(SyntaxType.LVal);
+                lVal.setLeft(true);
+                children.add(lVal);
                 children.add(new LeafNode(SyntaxType.ASSIGN, "=", lexer.getLineNumber()));
                 lexer.next();
                 if (lexer.getLexType().equals(LexType.GETINTTK)) {
@@ -374,8 +376,8 @@ public class Parser {
             children.add(new LeafNode(SyntaxType.SEMICN, ";", lexer.getLineNumber()));
             lexer.next();
         }
-        return new Stmt(children);
 
+        return new Stmt(children);
     }
 
     // Stmt -> 'if' '(' Cond ')' Stmt ['else' Stmt]

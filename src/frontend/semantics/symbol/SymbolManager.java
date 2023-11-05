@@ -76,8 +76,7 @@ public class SymbolManager {
     }
 
     public VarSymbol addVarSymbol(boolean isConst, String name, ArrayList<Integer> dimensions, ArrayList<Integer> initials) {
-        boolean isUndefined = depth == 1 && initials == null;
-        VarSymbol newSymbol = new VarSymbol(isConst, name, dimensions, initials, isUndefined);
+        VarSymbol newSymbol = new VarSymbol(isConst, name, dimensions, initials);
         curTable.addSymbol(newSymbol);
         return newSymbol;
     }

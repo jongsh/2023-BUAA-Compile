@@ -17,9 +17,9 @@ public class GlobalVar extends Value {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (isConst) {
-            sb.append(name).append(" = dso_local constant ").append(((Initializable) type).toInitString());
+            sb.append(name).append(" = dso_local constant ").append(((Initializable) valueType).toInitString());
         } else {
-            sb.append(name).append(" = dso_local global ").append(((Initializable) type).toInitString());
+            sb.append(name).append(" = dso_local global ").append(((Initializable) valueType).toInitString());
         }
         return sb.toString();
     }

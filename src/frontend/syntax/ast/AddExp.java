@@ -1,6 +1,9 @@
 package frontend.syntax.ast;
 
-import frontend.semantics.symbol.SymbolTable;
+import frontend.semantics.llvmir.IRBuilder;
+import frontend.semantics.llvmir.value.Digit;
+import frontend.semantics.llvmir.value.Value;
+import frontend.semantics.llvmir.value.instr.AluInstr;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;
@@ -8,16 +11,6 @@ import java.util.ArrayList;
 public class AddExp extends Node {
     public AddExp(ArrayList<Node> children) {
         super(SyntaxType.AddExp, children);
-    }
-
-    // AddExp → MulExp | AddExp ('+' | '−') MulExp
-    @Override
-    public String checkError() {
-        StringBuilder error = new StringBuilder();
-        for (Node child : children) {
-            error.append(child.checkError());
-        }
-        return error.toString();
     }
 
     public ArrayList<Integer> calculate() {
@@ -31,5 +24,35 @@ public class AddExp extends Node {
             values.add(((MulExp) children.get(0)).calculate().get(0));
         }
         return values;
+    }
+
+    // AddExp → MulExp | AddExp ('+' | '−') MulExp
+    @Override
+    public String checkError() {
+        StringBuilder error = new StringBuilder();
+        for (Node child : children) {
+            error.append(child.checkError());
+        }
+        return error.toString();
+    }
+
+    @Override
+    public Value genIR() {
+        Value retValue = children.get(0).genIR();
+        Value tempValue;
+        AluInstr aluInstr;
+        for (int i = 1; i < children.size(); i += 2) {
+            String aluType = (children.get(i).getType().equals(SyntaxType.MINU)) ? "-" : "+";
+            tempValue = children.get(i + 1).genIR();
+            if (retValue instanceof Digit && tempValue instanceof Digit) {
+                retValue = Digit.calculate((Digit) retValue, (Digit) tempValue, aluType);
+            } else {
+                aluInstr = IRBuilder.getInstance().newAluInstr(aluType);
+                aluInstr.addOperands(retValue, tempValue);
+                IRBuilder.getInstance().addInstr(aluInstr);
+                retValue = aluInstr;
+            }
+        }
+        return retValue;
     }
 }

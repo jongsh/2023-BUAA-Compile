@@ -10,6 +10,6 @@ public class Param extends Value {
 
     @Override
     public String toString() {
-        return type + " " + name;
+        return valueType + " " + name;
     }
 }

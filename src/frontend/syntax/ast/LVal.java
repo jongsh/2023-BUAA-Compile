@@ -1,5 +1,6 @@
 package frontend.syntax.ast;
 
+import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.VarSymbol;
 import frontend.syntax.SyntaxType;
@@ -7,8 +8,31 @@ import frontend.syntax.SyntaxType;
 import java.util.ArrayList;
 
 public class LVal extends Node {
+    private boolean isLeft;
+
     public LVal(ArrayList<Node> children) {
         super(SyntaxType.LVal, children);
+        this.isLeft = false;
+    }
+
+    public void setLeft(boolean left) {
+        isLeft = left;
+    }
+
+    public ArrayList<Integer> calculate() {
+        ArrayList<Integer> values = new ArrayList<>();
+
+        String name = ((LeafNode) children.get(0)).getContent();
+        VarSymbol varSymbol = SymbolManager.instance().getVarSymbol(name, true);
+        int index = 0;
+        if (children.size() > 1) {
+            index = ((Exp) children.get(2)).calculate().get(0);
+        }
+        if (children.size() > 5) {
+            index = index * varSymbol.getDimensions().get(1) + ((Exp) children.get(5)).calculate().get(0);
+        }
+        values.add(varSymbol.getInitial(index));
+        return values;
     }
 
     // LVal → Ident {'[' Exp ']'} // c k
@@ -40,19 +64,8 @@ public class LVal extends Node {
         return error.toString();
     }
 
-    public ArrayList<Integer> calculate() {
-        ArrayList<Integer> values = new ArrayList<>();
-
-        String name = ((LeafNode) children.get(0)).getContent();
-        VarSymbol varSymbol = SymbolManager.instance().getVarSymbol(name, true);
-        int index = 0;
-        if (children.size() > 1) {
-            index = ((Exp) children.get(2)).calculate().get(0);
-        }
-        if (children.size() > 5) {
-            index = index * varSymbol.getDimensions().get(1) + ((Exp) children.get(5)).calculate().get(0);
-        }
-        values.add(varSymbol.getInitial(index));
-        return values;
+    @Override
+    public Value genIR() {
+        return null;
     }
 }

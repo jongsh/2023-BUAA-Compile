@@ -1,5 +1,6 @@
 package frontend.syntax.ast;
 
+import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.symbol.FuncSymbol;
 import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.SymbolTable;
@@ -7,6 +8,7 @@ import frontend.semantics.symbol.VarSymbol;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class FuncRParams extends Node {
     public FuncRParams(ArrayList<Node> children) {
@@ -46,7 +48,7 @@ public class FuncRParams extends Node {
                         int dimension = varSymbol.getDimensions().size();
                         actual = (lVal.size() == 1) ? dimension :
                                 (lVal.size() == 4) ? dimension - 1 : dimension - 2;
-                    } else if (unaryExp.size() == 3 || unaryExp.size() == 4){
+                    } else if (unaryExp.size() == 3 || unaryExp.size() == 4) {
                         String identName = ((LeafNode) unaryExp.searchNode(SyntaxType.IDENFR)).getContent();
                         FuncSymbol funcSymbolTemp = SymbolManager.instance().getFuncSymbol(identName);
                         if (funcSymbolTemp.getType().equals("void")) {
@@ -61,5 +63,14 @@ public class FuncRParams extends Node {
             }
         }
         return error.toString();
+    }
+
+    // 不同于 genIR， genIR 返回多个 value
+    public ArrayList<Value> genIRs() {
+        ArrayList<Value> ret = new ArrayList<>();
+        for (int i = 0; i < children.size(); i += 2) {
+            ret.add(children.get(i).genIR());
+        }
+        return ret;
     }
 }

@@ -7,17 +7,25 @@ import java.util.ArrayList;
 
 public class Value {
     protected String name;
-    protected ValueType type;
+    protected ValueType valueType;
     protected ArrayList<Use> useList;
 
-    public Value(String name, ValueType type) {
+    public Value(String name, ValueType valueType) {
         this.name = name;
-        this.type = type;
+        this.valueType = valueType;
         this.useList = new ArrayList<>();
     }
 
-//    public Value() {
-//        this.useList = new ArrayList<>();
-//    }
+    public ValueType getValueType() {
+        return valueType;
+    }
 
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return valueType.toString() + " " + name;
+    }
 }

@@ -1,14 +1,19 @@
 package frontend.syntax.ast;
 
 import frontend.semantics.llvmir.IRBuilder;
+import frontend.semantics.llvmir.value.Digit;
 import frontend.semantics.llvmir.value.GlobalVar;
 import frontend.semantics.llvmir.value.Value;
+import frontend.semantics.llvmir.value.instr.AllocaInstr;
+import frontend.semantics.llvmir.value.instr.GepInstr;
+import frontend.semantics.llvmir.value.instr.StoreInstr;
 import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.SymbolTable;
 import frontend.semantics.symbol.VarSymbol;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ConstDef extends Node {
     public ConstDef(ArrayList<Node> children) {
@@ -66,10 +71,44 @@ public class ConstDef extends Node {
             );
             varSymbol.setLLVMValue(globalVar);
             IRBuilder.getInstance().addGlobalVar(globalVar);
-        } else {
-            /** TODO 局部定义 **/
-        }
 
+        } else {
+            AllocaInstr allocaInstr = IRBuilder.getInstance().newAllocaInstr(varSymbol.getDimensions());
+            varSymbol.setLLVMValue(allocaInstr);
+            IRBuilder.getInstance().addInstr(allocaInstr);
+            ArrayList<Value> fromOperands = ((ConstInitVal) children.get(children.size() - 1)).genIRs();
+            if (dimensions.size() == 0) {  // 普通变量
+                StoreInstr storeInstr = IRBuilder.getInstance().newStoreInstr(fromOperands.get(0), allocaInstr);
+                IRBuilder.getInstance().addInstr(storeInstr);
+            } else if (dimensions.size() == 1) {  // 一维数组
+                ArrayList<Value> indexes = new ArrayList<>(
+                        Arrays.asList(IRBuilder.getInstance().newDigit(0), null)
+                );
+                for (int num = 0; num < dimensions.get(0); ++num) {
+                    indexes.set(1, IRBuilder.getInstance().newDigit(num));
+                    GepInstr gepInstr = IRBuilder.getInstance().newGepInstr(allocaInstr, indexes);
+                    StoreInstr storeInstr = IRBuilder.getInstance().newStoreInstr(fromOperands.get(num), gepInstr);
+                    IRBuilder.getInstance().addInstr(gepInstr);
+                    IRBuilder.getInstance().addInstr(storeInstr);
+                }
+            } else if (dimensions.size() == 2) {
+                ArrayList<Value> indexes = new ArrayList<>(
+                        Arrays.asList(IRBuilder.getInstance().newDigit(0), null, null)
+                );
+                for (int num1 = 0; num1 < dimensions.get(0); ++num1) {
+                    indexes.set(1, IRBuilder.getInstance().newDigit(num1));
+                    for (int num2 = 0; num2 < dimensions.get(1); ++num2) {
+                        indexes.set(2, IRBuilder.getInstance().newDigit(num2));
+                        GepInstr gepInstr = IRBuilder.getInstance().newGepInstr(allocaInstr, indexes);
+                        StoreInstr storeInstr = IRBuilder.getInstance().newStoreInstr(
+                                fromOperands.get(num2 + num1 * dimensions.get(1)), gepInstr
+                        );
+                        IRBuilder.getInstance().addInstr(gepInstr);
+                        IRBuilder.getInstance().addInstr(storeInstr);
+                    }
+                }
+            }
+        }
         return null;
     }
 }

@@ -1,5 +1,11 @@
 package frontend.syntax.ast;
 
+import frontend.semantics.llvmir.IRBuilder;
+import frontend.semantics.llvmir.value.Digit;
+import frontend.semantics.llvmir.value.Function;
+import frontend.semantics.llvmir.value.Value;
+import frontend.semantics.llvmir.value.instr.AluInstr;
+import frontend.semantics.llvmir.value.instr.CallInstr;
 import frontend.semantics.symbol.FuncSymbol;
 import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.SymbolTable;
@@ -10,6 +16,18 @@ import java.util.ArrayList;
 public class UnaryExp extends Node {
     public UnaryExp(ArrayList<Node> children) {
         super(SyntaxType.UnaryExp, children);
+    }
+
+    public ArrayList<Integer> calculate() {
+        ArrayList<Integer> values = new ArrayList<>();
+        if (children.get(0).getType().equals(SyntaxType.UnaryOp)) {
+            values.add(
+                    ((UnaryOp) children.get(0)).calculate().get(0) * ((UnaryExp) children.get(1)).calculate().get(0)
+            );
+        } else {
+            values.addAll(((PrimaryExp) children.get(0)).calculate());
+        }
+        return values;
     }
 
     // UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')' // c d e j
@@ -39,15 +57,42 @@ public class UnaryExp extends Node {
         return error.toString();
     }
 
-    public ArrayList<Integer> calculate() {
-        ArrayList<Integer> values = new ArrayList<>();
-        if (children.get(0).getType().equals(SyntaxType.UnaryOp)) {
-            values.add(
-                    ((UnaryOp) children.get(0)).calculate().get(0) * ((UnaryExp) children.get(1)).calculate().get(0)
-            );
-        } else {
-            values.addAll(((PrimaryExp) children.get(0)).calculate());
+    @Override
+    public Value genIR() {
+        if (children.get(0).getType().equals(SyntaxType.IDENFR)) {  // 函数调用
+            String funcName = ((LeafNode) children.get(0)).getContent();
+            FuncSymbol funcSymbol = SymbolManager.instance().getFuncSymbol(funcName);
+
+            CallInstr callInstr = IRBuilder.getInstance().newCallInstr(funcSymbol.getType());
+            Function function = IRBuilder.getInstance().newFunction(funcSymbol.getType(), funcName);
+            callInstr.addOperand(function);
+            IRBuilder.getInstance().addInstr(callInstr);
+
+            if (children.size() > 2 && children.get(2).getType().equals(SyntaxType.FuncRParams)) {
+                SymbolManager.instance().createTable(SymbolTable.TableType.FUNC, false, funcName);
+                ArrayList<Value> operands = ((FuncRParams) children.get(2)).genIRs();
+                function.addOperands(operands);
+                SymbolManager.instance().tracebackTable();
+            }
+
+            return callInstr;
+
+        } else if (children.get(0).getType().equals(SyntaxType.PrimaryExp)) {  // PrimaryExp
+            return children.get(0).genIR();
+
+        } else {  // UnaryOp UnaryExp
+            Value retValue = children.get(1).genIR();
+            if (children.get(0).searchNode(SyntaxType.MINU) != null)
+                if (retValue instanceof Digit) {
+                    retValue = Digit.calculate(IRBuilder.getInstance().newDigit(0), (Digit) retValue, "-");
+                } else {
+                    AluInstr instr = IRBuilder.getInstance().newAluInstr("-");
+                    instr.addOperands(IRBuilder.getInstance().newDigit(0), retValue);
+                    retValue = instr;
+                    IRBuilder.getInstance().addInstr(instr);
+                }
+            return retValue;
         }
-        return values;
     }
+
 }

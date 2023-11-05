@@ -4,16 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArrayType extends ValueType implements Initializable {
-
     private int cnt;
-    private final ValueType type;
-    private ArrayList<Initializable> initials;  // 全局变量初始化
+    private final ValueType eleType;
+    private final ArrayList<Initializable> initials;  // 全局变量初始化
     private final boolean zeroInitializer;
 
     // 局部数组
-    public ArrayType(ArrayList<Integer> dimensions) {
+    public ArrayType(List<Integer> dimensions) {
         this.cnt = dimensions.get(0);
-        this.type = (dimensions.size() == 1) ? new VarType(32)
+        this.eleType = (dimensions.size() == 1) ? new VarType(32)
                 : new ArrayType(new ArrayList<>(dimensions.subList(1, dimensions.size())));
         this.initials = null;
         this.zeroInitializer = false;
@@ -22,7 +21,7 @@ public class ArrayType extends ValueType implements Initializable {
     // 全局数组
     public ArrayType(List<Integer> dimensions, List<Integer> integers) {
         this.cnt = dimensions.get(0);
-        this.type = (dimensions.size() == 1) ? new VarType(32)
+        this.eleType = (dimensions.size() == 1) ? new VarType(32)
                 : new ArrayType(new ArrayList<>(dimensions.subList(1, dimensions.size())));
         if (integers == null) {
             zeroInitializer = true;
@@ -47,12 +46,15 @@ public class ArrayType extends ValueType implements Initializable {
                 }
             }
         }
+    }
 
+    public ValueType getEleType() {
+        return eleType;
     }
 
     @Override
     public String toString() {
-        return "[" + cnt + " x " + type + "]";
+        return "[" + cnt + " x " + eleType + "]";
     }
 
     @Override

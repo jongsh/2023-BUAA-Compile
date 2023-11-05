@@ -1,5 +1,6 @@
 package frontend.syntax.ast;
 
+import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.symbol.SymbolTable;
 import frontend.syntax.SyntaxType;
 
@@ -19,5 +20,10 @@ public class Exp extends Node {
 
     public ArrayList<Integer> calculate() {
         return ((AddExp) children.get(0)).calculate();
+    }
+
+    @Override
+    public Value genIR() {
+        return children.get(0).genIR();
     }
 }

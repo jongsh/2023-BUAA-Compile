@@ -4,6 +4,7 @@ import frontend.semantics.llvmir.IRBuilder;
 import frontend.semantics.llvmir.value.Param;
 import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.symbol.SymbolManager;
+import frontend.semantics.symbol.VarSymbol;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;
@@ -58,12 +59,13 @@ public class FuncFParam extends Node {
                 }
             }
         }
-        SymbolManager.instance().addVarSymbol(false, identName, dimensions, null);
+        VarSymbol varSymbol = SymbolManager.instance().addVarSymbol(false, identName, dimensions, null);
         SymbolManager.instance().addFuncParam(dimensions);
 
-        //
+        // 生成中间代码
         Param param = IRBuilder.getInstance().newParam(dimensions);
         IRBuilder.getInstance().addParam(param);
+        varSymbol.setLLVMValue(param);
         return null;
     }
 }

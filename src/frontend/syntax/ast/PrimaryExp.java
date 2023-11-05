@@ -1,5 +1,6 @@
 package frontend.syntax.ast;
 
+import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.symbol.SymbolTable;
 import frontend.syntax.SyntaxType;
 
@@ -8,6 +9,19 @@ import java.util.ArrayList;
 public class PrimaryExp extends Node {
     public PrimaryExp(ArrayList<Node> children) {
         super(SyntaxType.PrimaryExp, children);
+    }
+
+
+    public ArrayList<Integer> calculate() {
+        ArrayList<Integer> values = new ArrayList<>();
+        if (children.get(0).getType().equals(SyntaxType.Number)) {
+            values.addAll(((Number) children.get(0)).calculate());
+        } else if (children.get(0).getType().equals(SyntaxType.LVal)) {
+            values.addAll(((LVal) children.get(0)).calculate());
+        } else {
+            values.addAll(((Exp) children.get(1)).calculate());
+        }
+        return values;
     }
 
     // PrimaryExp → '(' Exp ')' | LVal | Number
@@ -23,15 +37,12 @@ public class PrimaryExp extends Node {
         return error.toString();
     }
 
-    public ArrayList<Integer> calculate() {
-        ArrayList<Integer> values = new ArrayList<>();
-        if (children.get(0).getType().equals(SyntaxType.Number)) {
-            values.addAll(((Number) children.get(0)).calculate());
-        } else if (children.get(0).getType().equals(SyntaxType.LVal)) {
-            values.addAll(((LVal) children.get(0)).calculate());
+    @Override
+    public Value genIR() {
+        if (children.size() == 1) {
+            return children.get(0).genIR();
         } else {
-            values.addAll(((Exp) children.get(1)).calculate());
+            return children.get(1).genIR();
         }
-        return values;
     }
 }

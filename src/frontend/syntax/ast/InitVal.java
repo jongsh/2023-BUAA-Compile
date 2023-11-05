@@ -1,5 +1,6 @@
 package frontend.syntax.ast;
 
+import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.symbol.SymbolTable;
 import frontend.syntax.SyntaxType;
 
@@ -8,16 +9,6 @@ import java.util.ArrayList;
 public class InitVal extends Node {
     public InitVal(ArrayList<Node> children) {
         super(SyntaxType.InitVal, children);
-    }
-
-    //  InitVal → Exp | '{' [ InitVal { ',' InitVal } ] '}'
-    @Override
-    public String checkError() {
-        StringBuilder error = new StringBuilder();
-        for (Node child : children) {
-            error.append(child.checkError());
-        }
-        return error.toString();
     }
 
     public ArrayList<Integer> calculate() {
@@ -32,5 +23,29 @@ public class InitVal extends Node {
             values.addAll(((Exp) children.get(0)).calculate());
         }
         return values;
+    }
+
+    //  InitVal → Exp | '{' [ InitVal { ',' InitVal } ] '}'
+    @Override
+    public String checkError() {
+        StringBuilder error = new StringBuilder();
+        for (Node child : children) {
+            error.append(child.checkError());
+        }
+        return error.toString();
+    }
+
+    public ArrayList<Value> genIRs() {
+        ArrayList<Value> ret = new ArrayList<>();
+        if (children.size() == 1) {
+            ret.add(children.get(0).genIR());
+        } else {
+            for (Node child : children) {
+                if (child instanceof InitVal) {
+                    ret.addAll(((InitVal) child).genIRs());
+                }
+            }
+        }
+        return ret;
     }
 }

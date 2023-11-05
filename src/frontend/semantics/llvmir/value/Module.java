@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class Module extends Value {
     private final String declareList = "declare i32 @getint()\ndeclare void @putint(i32)\n" +
-            "declare void @putch(i32)\ndeclare void @putstr(i8*)\n\n";
+            "declare void @putch(i32)\ndeclare void @putstr(i8*)\n";
     private ArrayList<GlobalVar> globalVarList;
     private ArrayList<GlobalStr> globalStrList;
     private ArrayList<Function> functionList;
@@ -34,11 +34,11 @@ public class Module extends Value {
     public String toString() {
         StringBuilder sb = new StringBuilder(declareList);
         for (GlobalVar globalVar : globalVarList) {
-            sb.append(globalVar).append("\n");
+            sb.append("\n").append(globalVar);
         }
         sb.append("\n");
         for (Function function : functionList) {
-            sb.append(function);
+            sb.append("\n").append(function.toDefineString()).append("\n");
         }
         return sb.toString();
     }

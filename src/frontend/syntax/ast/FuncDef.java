@@ -1,6 +1,7 @@
 package frontend.syntax.ast;
 
 import frontend.semantics.llvmir.IRBuilder;
+import frontend.semantics.llvmir.value.BasicBlock;
 import frontend.semantics.llvmir.value.Function;
 import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.symbol.FuncSymbol;
@@ -54,14 +55,20 @@ public class FuncDef extends Node {
         String identName = ((LeafNode) children.get(1)).getContent();
         FuncSymbol funcSymbol = SymbolManager.instance().addFuncSymbol(identName);
         SymbolManager.instance().createTable(SymbolTable.TableType.FUNC, true, identName);
+
+        // 生成中间代码
         children.get(0).genIR();            // 返回值类型
+        Function function = IRBuilder.getInstance().newFunction(funcSymbol.getType(), identName);
+        IRBuilder.getInstance().addFunction(function);
+
         if (children.get(3).getType().equals(SyntaxType.FuncFParams)) {   // 检查是否有参数
             children.get(3).genIR();        // 函数形参
         }
+        BasicBlock basicBlock = IRBuilder.getInstance().newBasicBlock();
+        IRBuilder.getInstance().addBasicBlock(basicBlock);
+        children.get(children.size() - 1).genIR();   // 函数块
 
-        // 生成中间代码
-        Function function = IRBuilder.getInstance().newFunction(funcSymbol.getType(), identName);
-        IRBuilder.getInstance().addFunction(function);
+        funcSymbol.setLLVMValue(function);
         SymbolManager.instance().tracebackTable();
         return null;
     }
