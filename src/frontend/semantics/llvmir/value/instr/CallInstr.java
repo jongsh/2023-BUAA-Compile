@@ -6,9 +6,10 @@ import frontend.semantics.llvmir.value.Function;
 
 public class CallInstr extends Instr {
 
-    public CallInstr(String name, ValueType valueType, BasicBlock prev) {
+    public CallInstr(String name, Function function, BasicBlock prev) {
         // int函数有中间寄存器，void无
-        super(name, valueType, InstrType.CALL, prev);
+        super(name, function.getValueType(), InstrType.CALL, prev);
+        super.addOperand(function);
     }
 
     @Override

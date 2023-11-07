@@ -5,7 +5,9 @@ import frontend.semantics.llvmir.type.PointerType;
 import frontend.semantics.llvmir.type.ValueType;
 import frontend.semantics.llvmir.type.VarType;
 import frontend.semantics.llvmir.value.*;
+import frontend.semantics.llvmir.value.Module;
 import frontend.semantics.llvmir.value.instr.*;
+import util.CalTool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,9 @@ public class IRBuilder {
     private Module module;
     private Function curFunction;
     private BasicBlock curBasicBlock;
-    private Instr curInstr;
+
+    private final ArrayList<BasicBlock> context = new ArrayList<>();
+    private int contextPos = 0;
 
     private static IRBuilder instance = new IRBuilder();
 
@@ -60,6 +64,17 @@ public class IRBuilder {
         module.addGlobalVar(globalVar);
     }
 
+    // ----------------------- 全局字符串 ------------------------ //
+    public GlobalStr newGlobalStr(String str) {
+        int length = CalTool.length(str) + 1;
+        String actualStr = str.replace("\\n", "\\0A") + "\\00";
+        return new GlobalStr(GLOBAL_STR + (globalStrCnt++), actualStr, length, module);
+    }
+
+    public void addGlobalStr(GlobalStr globalStr) {
+        module.addGlobalStr(globalStr);
+    }
+
     // ---------------------- 函数 ------------------------------ //
     public Function newFunction(String typeStr, String name) {
         String actualName = "@" + name;
@@ -70,6 +85,7 @@ public class IRBuilder {
     public void addFunction(Function function) {
         pramCnt = 0;
         basicBlockCnt = 0;
+        localVarCnt = 0;
         module.addFunction(function);
         curFunction = function;
     }
@@ -88,8 +104,13 @@ public class IRBuilder {
         return new Param(actualName, type);
     }
 
-    public void addParam(Param param) {
+    public AllocaInstr addParam(Param param) {
         curFunction.addParam(param);
+        AllocaInstr allocaInstr = new AllocaInstr(LOCAL_VAR + (localVarCnt++), param.getValueType(), curBasicBlock);
+        StoreInstr storeInstr = new StoreInstr(curBasicBlock, param, allocaInstr);
+        addInstr(allocaInstr);
+        addInstr(storeInstr);
+        return allocaInstr;
     }
 
     // ----------------------- 基本块 ------------------------------ //
@@ -99,7 +120,6 @@ public class IRBuilder {
     }
 
     public void addBasicBlock(BasicBlock basicBlock) {
-        localVarCnt = 0;
         curFunction.addBasicBlock(basicBlock);
         curBasicBlock = basicBlock;
     }
@@ -118,11 +138,11 @@ public class IRBuilder {
         return new AluInstr(name, new VarType(32), instrType, curBasicBlock);
     }
 
-    public CallInstr newCallInstr(String funcType) {
-        if (funcType.equals("int")) {  // int 函数
-            return new CallInstr(LOCAL_VAR + (localVarCnt++), new VarType(32), curBasicBlock);
-        } else {                       // void 函数
-            return new CallInstr("", new VarType(0), curBasicBlock);
+    public CallInstr newCallInstr(Function function) {
+        if (((VarType) function.getValueType()).getWidth() == 0) {
+            return new CallInstr("", function, curBasicBlock);
+        } else {
+            return new CallInstr(LOCAL_VAR + (localVarCnt++), function, curBasicBlock);
         }
     }
 
@@ -132,22 +152,104 @@ public class IRBuilder {
     }
 
     public StoreInstr newStoreInstr(Value from, Value to) {
-        StoreInstr storeInstr = new StoreInstr(curBasicBlock);
-        storeInstr.addOperand(from);
-        storeInstr.addOperand(new Value(to.getName(), new PointerType(to.getValueType())));
-        return storeInstr;
+        return new StoreInstr(curBasicBlock, from, to);
     }
 
-    public GepInstr newGepInstr(Value target, ArrayList<Value> indexes) {
-        GepInstr gepInstr= new GepInstr(LOCAL_VAR + (localVarCnt++), target, curBasicBlock);
+    public LoadInstr newLoadInstr(Value target) {
+        return new LoadInstr(LOCAL_VAR + (localVarCnt++), target, curBasicBlock);
+    }
+
+    public GepInstr newGepInstr(Value target, List<Value> indexes) {
+        GepInstr gepInstr = new GepInstr(LOCAL_VAR + (localVarCnt++), target, curBasicBlock);
         for (Value index : indexes) {
-            gepInstr.addOperand(index);
+            if (index != null) {
+                gepInstr.addOperand(index);
+            }
         }
         return gepInstr;
     }
 
+    public RetInstr newRetInstr(Value retValue) {
+        return new RetInstr(
+                (retValue != null) ? retValue : new Value("", new VarType(0)),
+                curBasicBlock
+        );
+    }
+
+    public BRInstr newBRInstr(BasicBlock obj) {
+        return new BRInstr(obj, curBasicBlock);
+    }
+
+    public BRInstr newBRInstr(Value condValue, BasicBlock trueObj, BasicBlock falseObj) {
+        return new BRInstr(condValue, trueObj, falseObj, curBasicBlock);
+    }
+
+    public IcmpInstr newIcmpInstr(String op, Value operand1, Value operand2) {
+        IcmpInstr.IcmpType icmpType = (op.equals("==")) ?
+                IcmpInstr.IcmpType.eq : (op.equals("!=")) ?
+                IcmpInstr.IcmpType.ne : (op.equals("<")) ?
+                IcmpInstr.IcmpType.slt : (op.equals("<=")) ?
+                IcmpInstr.IcmpType.sle : (op.equals(">")) ?
+                IcmpInstr.IcmpType.sgt : (op.equals(">=")) ?
+                IcmpInstr.IcmpType.sge : null;
+
+        int width1 = ((VarType) operand1.getValueType()).getWidth();
+        int width2 = ((VarType) operand2.getValueType()).getWidth();
+        if (width1 != 32) {
+            operand1 = newZextInstr(operand1, new VarType(32));
+            addInstr((Instr) operand1);
+        }
+        if (width2 != 32) {
+            operand2 = newZextInstr(operand2, new VarType(32));
+            addInstr((Instr) operand2);
+        }
+        return new IcmpInstr(LOCAL_VAR + (localVarCnt++), icmpType, operand1, operand2, curBasicBlock);
+    }
+
+    public ZextInstr newZextInstr(Value source, ValueType to) {
+        return new ZextInstr(LOCAL_VAR + (localVarCnt++), to, source, curBasicBlock);
+    }
+
     public void addInstr(Instr instr) {
         curBasicBlock.addInstr(instr);
-        curInstr = instr;
+    }
+
+    // ---------------------------- 基本块上下文 -------------------------- //
+    public IRBuilder addContext(BasicBlock block) {
+        try {
+            this.context.set(contextPos, block);
+        } catch (IndexOutOfBoundsException e) {
+            this.context.add(block);
+        }
+        contextPos += 1;
+        return this;
+    }
+
+    public BasicBlock getLeaveBlock() {
+        return context.get(contextPos - 1);    // 上下文最后一个是语句离开的基本块
+    }
+
+    public BasicBlock getFalseBlock() {
+        return context.get(contextPos - 2);
+    }
+
+    public BasicBlock getIterBlock() {
+        return context.get(contextPos - 2);
+    }
+
+    public BasicBlock getTrueBlock() {
+        return context.get(contextPos - 3);
+    }
+
+    public void setTrueBlock(BasicBlock block) {
+        context.set(contextPos - 3, block);
+    }
+
+    public void setFalseBlock(BasicBlock block) {
+        context.set(contextPos - 2, block);
+    }
+
+    public void cleanContext(int cnt) {
+        contextPos -= cnt;
     }
 }

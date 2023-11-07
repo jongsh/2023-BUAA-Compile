@@ -3,17 +3,18 @@ package frontend.semantics.llvmir.type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArrayType extends ValueType implements Initializable {
+public class ArrayType extends PointerType implements Initializable {
     private int cnt;
     private final ValueType eleType;
-    private final ArrayList<Initializable> initials;  // 全局变量初始化
+    private final ArrayList<Initializable> initials;  // 全局int变量数组初始化
     private final boolean zeroInitializer;
 
-    // 局部数组
+    // 局部int数组
     public ArrayType(List<Integer> dimensions) {
         this.cnt = dimensions.get(0);
         this.eleType = (dimensions.size() == 1) ? new VarType(32)
                 : new ArrayType(new ArrayList<>(dimensions.subList(1, dimensions.size())));
+        this.targetType = eleType;
         this.initials = null;
         this.zeroInitializer = false;
     }
@@ -23,6 +24,7 @@ public class ArrayType extends ValueType implements Initializable {
         this.cnt = dimensions.get(0);
         this.eleType = (dimensions.size() == 1) ? new VarType(32)
                 : new ArrayType(new ArrayList<>(dimensions.subList(1, dimensions.size())));
+        this.targetType = eleType;
         if (integers == null) {
             zeroInitializer = true;
             this.initials = null;
@@ -48,8 +50,21 @@ public class ArrayType extends ValueType implements Initializable {
         }
     }
 
+    // 全局字符串
+    public ArrayType(int strLength) {
+        this.cnt = strLength;
+        this.eleType = new VarType(8);
+        this.targetType = eleType;
+        this.initials = null;
+        this.zeroInitializer = false;
+    }
+
     public ValueType getEleType() {
         return eleType;
+    }
+
+    public PointerType toPointerType() {
+        return new PointerType(targetType);
     }
 
     @Override

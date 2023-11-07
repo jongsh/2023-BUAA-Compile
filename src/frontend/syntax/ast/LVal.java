@@ -1,11 +1,18 @@
 package frontend.syntax.ast;
 
+import frontend.semantics.llvmir.IRBuilder;
+import frontend.semantics.llvmir.type.ArrayType;
+import frontend.semantics.llvmir.type.PointerType;
 import frontend.semantics.llvmir.value.Value;
+import frontend.semantics.llvmir.value.instr.GepInstr;
+import frontend.semantics.llvmir.value.instr.Instr;
+import frontend.semantics.llvmir.value.instr.LoadInstr;
 import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.VarSymbol;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class LVal extends Node {
     private boolean isLeft;
@@ -64,8 +71,51 @@ public class LVal extends Node {
         return error.toString();
     }
 
+    // LVal → Ident {'[' Exp ']'} // c k
     @Override
     public Value genIR() {
-        return null;
+        String identName = ((LeafNode) children.get(0)).getContent();
+        VarSymbol varSymbol = SymbolManager.instance().getVarSymbol(identName, true);
+        Value targetValue = varSymbol.getLLVMValue();
+
+        int cnt = 0;  // exp 个数
+        if (((PointerType) targetValue.getValueType()).getTargetType() instanceof PointerType) {
+            ArrayList<Value> indexes = new ArrayList<>();
+            if (((PointerType) targetValue.getValueType()).getTargetType() instanceof ArrayType) {
+                indexes.add(IRBuilder.getInstance().newDigit(0));
+            } else {
+                targetValue = IRBuilder.getInstance().newLoadInstr(targetValue);
+                IRBuilder.getInstance().addInstr((Instr) targetValue);
+            }
+
+            for (int i = 1; i < children.size(); ++i) {
+                if (children.get(i).getType().equals(SyntaxType.Exp)) {
+                    indexes.add(children.get(i).genIR());
+                    cnt++;
+                }
+            }
+            if (cnt > 0) {
+                targetValue = IRBuilder.getInstance().newGepInstr(targetValue, indexes);
+                IRBuilder.getInstance().addInstr((Instr) targetValue);
+            }
+        }
+
+        if (!isLeft) {
+            if (((PointerType) targetValue.getValueType()).getTargetType() instanceof PointerType) {
+                targetValue = IRBuilder.getInstance().newGepInstr(
+                        targetValue,
+                        Arrays.asList(
+                                IRBuilder.getInstance().newDigit(0),
+                                IRBuilder.getInstance().newDigit(0)
+                        )
+                );
+                IRBuilder.getInstance().addInstr((Instr) targetValue);
+            } else {
+                targetValue = IRBuilder.getInstance().newLoadInstr(targetValue);
+                IRBuilder.getInstance().addInstr((Instr) targetValue);
+
+            }
+        }
+        return targetValue;
     }
 }

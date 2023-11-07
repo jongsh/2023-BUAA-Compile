@@ -474,10 +474,12 @@ public class Parser {
     // ForStmt -> LVal '=' Exp
     private ForStmt parseForStmt() {
         ArrayList<Node> children = new ArrayList<>();
-        children.add(parseLVal());
+        LVal lVal = parseLVal();
+        children.add(lVal);
         if (lexer.getLexType().equals(LexType.ASSIGN)) {
             children.add(new LeafNode(SyntaxType.ASSIGN, "=", lexer.getLineNumber()));
             lexer.next();
+            lVal.setLeft(true);
         }
         children.add(parseExp());
         return new ForStmt(children);

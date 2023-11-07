@@ -4,6 +4,9 @@ import frontend.semantics.llvmir.IRBuilder;
 import frontend.semantics.llvmir.value.BasicBlock;
 import frontend.semantics.llvmir.value.Function;
 import frontend.semantics.llvmir.value.Value;
+import frontend.semantics.llvmir.value.instr.AllocaInstr;
+import frontend.semantics.llvmir.value.instr.LoadInstr;
+import frontend.semantics.llvmir.value.instr.RetInstr;
 import frontend.semantics.symbol.FuncSymbol;
 import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.SymbolTable;
@@ -43,12 +46,20 @@ public class MainFuncDef extends Node {
         // 生成中间代码
         Function function = IRBuilder.getInstance().newFunction(funcSymbol.getType(), "main");
         IRBuilder.getInstance().addFunction(function);
-
         BasicBlock basicBlock = IRBuilder.getInstance().newBasicBlock();
         IRBuilder.getInstance().addBasicBlock(basicBlock);
+
+//        BasicBlock returnBlock = IRBuilder.getInstance().newBasicBlock();   // 返回块
+//        IRBuilder.getInstance().addContext(returnBlock);
+//        AllocaInstr allocaInstr = IRBuilder.getInstance().newAllocaInstr(new ArrayList<>()); // 分配返回值
+//        function.setRetValue(allocaInstr);
+//        IRBuilder.getInstance().addInstr(allocaInstr);
+
         children.get(children.size() - 1).genIR();   // 函数块
 
         funcSymbol.setLLVMValue(function);
+//        IRBuilder.getInstance().addBasicBlock(returnBlock);
+
         SymbolManager.instance().tracebackTable();
         return null;
     }

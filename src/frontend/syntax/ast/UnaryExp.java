@@ -6,6 +6,7 @@ import frontend.semantics.llvmir.value.Function;
 import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.llvmir.value.instr.AluInstr;
 import frontend.semantics.llvmir.value.instr.CallInstr;
+import frontend.semantics.llvmir.value.instr.Instr;
 import frontend.semantics.symbol.FuncSymbol;
 import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.SymbolTable;
@@ -63,10 +64,7 @@ public class UnaryExp extends Node {
             String funcName = ((LeafNode) children.get(0)).getContent();
             FuncSymbol funcSymbol = SymbolManager.instance().getFuncSymbol(funcName);
 
-            CallInstr callInstr = IRBuilder.getInstance().newCallInstr(funcSymbol.getType());
             Function function = IRBuilder.getInstance().newFunction(funcSymbol.getType(), funcName);
-            callInstr.addOperand(function);
-            IRBuilder.getInstance().addInstr(callInstr);
 
             if (children.size() > 2 && children.get(2).getType().equals(SyntaxType.FuncRParams)) {
                 SymbolManager.instance().createTable(SymbolTable.TableType.FUNC, false, funcName);
@@ -75,6 +73,8 @@ public class UnaryExp extends Node {
                 SymbolManager.instance().tracebackTable();
             }
 
+            CallInstr callInstr = IRBuilder.getInstance().newCallInstr(function);
+            IRBuilder.getInstance().addInstr(callInstr);
             return callInstr;
 
         } else if (children.get(0).getType().equals(SyntaxType.PrimaryExp)) {  // PrimaryExp
@@ -82,7 +82,11 @@ public class UnaryExp extends Node {
 
         } else {  // UnaryOp UnaryExp
             Value retValue = children.get(1).genIR();
-            if (children.get(0).searchNode(SyntaxType.MINU) != null)
+            if (children.get(0).searchNode(SyntaxType.NOT) != null) {
+                retValue = IRBuilder.getInstance().newIcmpInstr(
+                        "==", retValue, IRBuilder.getInstance().newDigit(0));
+                IRBuilder.getInstance().addInstr((Instr) retValue);
+            } else if (children.get(0).searchNode(SyntaxType.MINU) != null) {
                 if (retValue instanceof Digit) {
                     retValue = Digit.calculate(IRBuilder.getInstance().newDigit(0), (Digit) retValue, "-");
                 } else {
@@ -91,6 +95,7 @@ public class UnaryExp extends Node {
                     retValue = instr;
                     IRBuilder.getInstance().addInstr(instr);
                 }
+            }
             return retValue;
         }
     }

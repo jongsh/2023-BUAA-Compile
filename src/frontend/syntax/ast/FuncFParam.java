@@ -3,6 +3,7 @@ package frontend.syntax.ast;
 import frontend.semantics.llvmir.IRBuilder;
 import frontend.semantics.llvmir.value.Param;
 import frontend.semantics.llvmir.value.Value;
+import frontend.semantics.llvmir.value.instr.AllocaInstr;
 import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.VarSymbol;
 import frontend.syntax.SyntaxType;
@@ -64,8 +65,8 @@ public class FuncFParam extends Node {
 
         // 生成中间代码
         Param param = IRBuilder.getInstance().newParam(dimensions);
-        IRBuilder.getInstance().addParam(param);
-        varSymbol.setLLVMValue(param);
+        AllocaInstr allocaInstr = IRBuilder.getInstance().addParam(param);
+        varSymbol.setLLVMValue(allocaInstr);
         return null;
     }
 }

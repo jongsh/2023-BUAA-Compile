@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class Compiler {
     public static void main(String[] args) {
         String inputFileName = "testfile.txt";
-        String outputFileName = "error.txt";
+        String outputFileName = "llvm_ir.txt";
 
         Lexer lexer = new Lexer(inputFromFile(inputFileName));
         // 词法分析输出

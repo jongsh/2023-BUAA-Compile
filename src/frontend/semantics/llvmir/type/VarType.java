@@ -15,6 +15,10 @@ public class VarType extends ValueType implements Initializable {
         this.initial = initial;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
     @Override
     public String toString() {
         return (width == 0) ? "void" : "i" + width;

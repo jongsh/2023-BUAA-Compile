@@ -93,7 +93,7 @@ public class ConstDef extends Node {
                 }
             } else if (dimensions.size() == 2) {
                 ArrayList<Value> indexes = new ArrayList<>(
-                        Arrays.asList(IRBuilder.getInstance().newDigit(0), null, null)
+                        Arrays.asList(IRBuilder.getInstance().newDigit(0), null)
                 );
                 for (int num1 = 0; num1 < dimensions.get(0); ++num1) {
                     indexes.set(1, IRBuilder.getInstance().newDigit(num1));

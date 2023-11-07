@@ -8,6 +8,7 @@ public class Function extends User {
     private final Module prev;
     private final ArrayList<Param> paramList;
     private final ArrayList<BasicBlock> basicBlockList;
+    private Value retValue;
 
     public Function(String name, ValueType type, Module prev) {
         super(name, type);
@@ -24,6 +25,10 @@ public class Function extends User {
         this.paramList.add(param);
     }
 
+    public Value getRetValue() {
+        return retValue;
+    }
+
     public void addOperands(ArrayList<Value> operands) {
         for (Value operand : operands) {
             super.addOperand(operand);
@@ -35,7 +40,7 @@ public class Function extends User {
         sb.append(valueType).append(" ").append(name);
         sb.append("(");
         for (Value operand : operands) {
-            sb.append(operand).append(", ");
+            sb.append(operand.getValueType()).append(" ").append(operand.getName()).append(", ");
         }
         if (operands.size() > 0) {
             sb.delete(sb.length() - 2, sb.length());

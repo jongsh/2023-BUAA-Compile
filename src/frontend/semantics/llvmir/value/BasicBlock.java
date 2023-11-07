@@ -21,11 +21,13 @@ public class BasicBlock extends Value {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder("");
+
         sb.append("\n").append(name).append(":\n");
         for (Instr instr : instrList) {
             sb.append("\t").append(instr).append("\n");
         }
+
         return sb.toString();
     }
 }
