@@ -27,6 +27,8 @@ public class LOrExp extends Node {
     @Override
     public Value genIR() {
         BasicBlock trueBlock = IRBuilder.getInstance().getTrueBlock();
+        BasicBlock falseBlock = (IRBuilder.getInstance().getFalseBlock() != null) ?
+                IRBuilder.getInstance().getFalseBlock() : IRBuilder.getInstance().getLeaveBlock();
         Value value;
         if (children.size() > 1) {
             BasicBlock block = IRBuilder.getInstance().newBasicBlock();
@@ -38,7 +40,8 @@ public class LOrExp extends Node {
 
             IRBuilder.getInstance().addBasicBlock(block);
         }
-        value = children.get(children.size() - 1).genIR();   // 解析 EqExp
+        IRBuilder.getInstance().setFalseBlock(falseBlock);
+        value = children.get(children.size() - 1).genIR();
         return value;
     }
 }

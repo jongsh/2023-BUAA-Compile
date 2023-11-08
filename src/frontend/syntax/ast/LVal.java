@@ -3,6 +3,7 @@ package frontend.syntax.ast;
 import frontend.semantics.llvmir.IRBuilder;
 import frontend.semantics.llvmir.type.ArrayType;
 import frontend.semantics.llvmir.type.PointerType;
+import frontend.semantics.llvmir.type.VarType;
 import frontend.semantics.llvmir.value.Value;
 import frontend.semantics.llvmir.value.instr.GepInstr;
 import frontend.semantics.llvmir.value.instr.Instr;
@@ -78,42 +79,36 @@ public class LVal extends Node {
         VarSymbol varSymbol = SymbolManager.instance().getVarSymbol(identName, true);
         Value targetValue = varSymbol.getLLVMValue();
 
-        int cnt = 0;  // exp 个数
-        if (((PointerType) targetValue.getValueType()).getTargetType() instanceof PointerType) {
-            ArrayList<Value> indexes = new ArrayList<>();
-            if (((PointerType) targetValue.getValueType()).getTargetType() instanceof ArrayType) {
-                indexes.add(IRBuilder.getInstance().newDigit(0));
-            } else {
-                targetValue = IRBuilder.getInstance().newLoadInstr(targetValue);
-                IRBuilder.getInstance().addInstr((Instr) targetValue);
-            }
+        ArrayList<Value> indexes = new ArrayList<>();
+        if (((PointerType) targetValue.getValueType()).getTargetType() instanceof ArrayType) {
+            indexes.add(IRBuilder.getInstance().newDigit(0));
+        } else if (((PointerType) targetValue.getValueType()).getTargetType() instanceof PointerType) {
+            targetValue = IRBuilder.getInstance().newLoadInstr(targetValue);
+            IRBuilder.getInstance().addInstr((Instr) targetValue);
+        } else if (!isLeft) {
+            targetValue = IRBuilder.getInstance().newLoadInstr(targetValue);
+            IRBuilder.getInstance().addInstr((Instr) targetValue);
+        }
 
-            for (int i = 1; i < children.size(); ++i) {
-                if (children.get(i).getType().equals(SyntaxType.Exp)) {
-                    indexes.add(children.get(i).genIR());
-                    cnt++;
-                }
-            }
-            if (cnt > 0) {
-                targetValue = IRBuilder.getInstance().newGepInstr(targetValue, indexes);
-                IRBuilder.getInstance().addInstr((Instr) targetValue);
+        for (int i = 1; i < children.size(); ++i) {
+            if (children.get(i).getType().equals(SyntaxType.Exp)) {
+                indexes.add(children.get(i).genIR());
             }
         }
 
-        if (!isLeft) {
-            if (((PointerType) targetValue.getValueType()).getTargetType() instanceof PointerType) {
-                targetValue = IRBuilder.getInstance().newGepInstr(
-                        targetValue,
-                        Arrays.asList(
-                                IRBuilder.getInstance().newDigit(0),
-                                IRBuilder.getInstance().newDigit(0)
-                        )
-                );
+        if (indexes.size() > 0) {
+            targetValue = IRBuilder.getInstance().newGepInstr(targetValue, indexes);
+            if (isLeft) {
                 IRBuilder.getInstance().addInstr((Instr) targetValue);
             } else {
-                targetValue = IRBuilder.getInstance().newLoadInstr(targetValue);
-                IRBuilder.getInstance().addInstr((Instr) targetValue);
-
+                if (((PointerType) targetValue.getValueType()).getTargetType() instanceof VarType) {
+                    IRBuilder.getInstance().addInstr((Instr) targetValue);
+                    targetValue = IRBuilder.getInstance().newLoadInstr(targetValue);
+                    IRBuilder.getInstance().addInstr((Instr) targetValue);
+                } else {
+                    ((GepInstr) targetValue).addOperand(IRBuilder.getInstance().newDigit(0));
+                    IRBuilder.getInstance().addInstr((Instr) targetValue);
+                }
             }
         }
         return targetValue;

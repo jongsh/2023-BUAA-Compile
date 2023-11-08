@@ -30,6 +30,8 @@ public class LAndExp extends Node {
     public Value genIR() {
         BasicBlock falseBlock = (IRBuilder.getInstance().getFalseBlock() != null) ?
                 IRBuilder.getInstance().getFalseBlock() : IRBuilder.getInstance().getLeaveBlock();
+        BasicBlock trueBlock = IRBuilder.getInstance().getTrueBlock();
+
         Value value;
         if (children.size() > 1) {
             BasicBlock block = IRBuilder.getInstance().newBasicBlock();
@@ -47,6 +49,7 @@ public class LAndExp extends Node {
 
             IRBuilder.getInstance().addBasicBlock(block);
         }
+        IRBuilder.getInstance().setTrueBlock(trueBlock);  // 新的 true block
         value = children.get(children.size() - 1).genIR();   // 解析 EqExp
         if (((VarType) value.getValueType()).getWidth() != 1) {
             value = IRBuilder.getInstance().newIcmpInstr(

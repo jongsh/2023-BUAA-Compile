@@ -122,16 +122,26 @@ public class Lexer {
                 token += String.valueOf(source.charAt(curPos));
             }
         } else if (source.charAt(curPos) == '"') {
-            int nextCurPos = curPos + 1;
             int temp = curPos + 1;
-            while (source.charAt(temp) != '\n') {
-                if (source.charAt(temp) == '\"') {
-                    nextCurPos = temp;
+            while (source.charAt(temp) != '\"') {
+                if (source.charAt(temp) == '\n') {
+                    lineNumber++;
                 }
                 temp++;
             }
-            token = source.substring(curPos, nextCurPos + 1);
-            curPos = nextCurPos;
+            token = source.substring(curPos, temp + 1);
+            curPos = temp;
+
+//            int nextCurPos = curPos + 1;
+//            int temp = curPos + 1;
+//            while (source.charAt(temp) != '\n') {
+//                if (source.charAt(temp) == '\"') {
+//                    nextCurPos = temp;
+//                }
+//                temp++;
+//            }
+//            token = source.substring(curPos, nextCurPos + 1);
+//            curPos = nextCurPos;
         } else if (Character.isDigit(source.charAt(curPos))) {
             int nextCurPos = curPos;
             while (Character.isDigit(source.charAt(nextCurPos))) {
