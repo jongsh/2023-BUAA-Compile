@@ -1,6 +1,6 @@
 package frontend.semantics.symbol;
 
-import frontend.semantics.llvmir.value.Value;
+import midend.llvmir.value.Value;
 
 import java.util.ArrayList;
 

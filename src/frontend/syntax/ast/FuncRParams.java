@@ -1,14 +1,12 @@
 package frontend.syntax.ast;
 
-import frontend.semantics.llvmir.value.Value;
+import midend.llvmir.value.Value;
 import frontend.semantics.symbol.FuncSymbol;
 import frontend.semantics.symbol.SymbolManager;
-import frontend.semantics.symbol.SymbolTable;
 import frontend.semantics.symbol.VarSymbol;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class FuncRParams extends Node {
     public FuncRParams(ArrayList<Node> children) {

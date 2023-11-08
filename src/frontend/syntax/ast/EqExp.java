@@ -1,11 +1,8 @@
 package frontend.syntax.ast;
 
-import frontend.semantics.llvmir.IRBuilder;
-import frontend.semantics.llvmir.type.VarType;
-import frontend.semantics.llvmir.value.BasicBlock;
-import frontend.semantics.llvmir.value.Value;
-import frontend.semantics.llvmir.value.instr.IcmpInstr;
-import frontend.semantics.symbol.SymbolTable;
+import midend.llvmir.IRBuilder;
+import midend.llvmir.value.Value;
+import midend.llvmir.value.instr.IcmpInstr;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;

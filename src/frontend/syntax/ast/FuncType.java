@@ -1,9 +1,7 @@
 package frontend.syntax.ast;
 
-import frontend.semantics.llvmir.value.Value;
-import frontend.semantics.symbol.FuncSymbol;
+import midend.llvmir.value.Value;
 import frontend.semantics.symbol.SymbolManager;
-import frontend.semantics.symbol.SymbolTable;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;

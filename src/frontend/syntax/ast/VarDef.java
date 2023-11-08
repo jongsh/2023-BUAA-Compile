@@ -1,12 +1,11 @@
 package frontend.syntax.ast;
 
-import frontend.semantics.llvmir.IRBuilder;
-import frontend.semantics.llvmir.type.PointerType;
-import frontend.semantics.llvmir.value.GlobalVar;
-import frontend.semantics.llvmir.value.Value;
-import frontend.semantics.llvmir.value.instr.AllocaInstr;
-import frontend.semantics.llvmir.value.instr.GepInstr;
-import frontend.semantics.llvmir.value.instr.StoreInstr;
+import midend.llvmir.IRBuilder;
+import midend.llvmir.value.GlobalVar;
+import midend.llvmir.value.Value;
+import midend.llvmir.value.instr.AllocaInstr;
+import midend.llvmir.value.instr.GepInstr;
+import midend.llvmir.value.instr.StoreInstr;
 import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.SymbolTable;
 import frontend.semantics.symbol.VarSymbol;

@@ -1,11 +1,11 @@
 package frontend.syntax.ast;
 
-import frontend.semantics.llvmir.IRBuilder;
-import frontend.semantics.llvmir.value.BasicBlock;
-import frontend.semantics.llvmir.value.Function;
-import frontend.semantics.llvmir.value.GlobalStr;
-import frontend.semantics.llvmir.value.Value;
-import frontend.semantics.llvmir.value.instr.*;
+import midend.llvmir.IRBuilder;
+import midend.llvmir.value.BasicBlock;
+import midend.llvmir.value.Function;
+import midend.llvmir.value.GlobalStr;
+import midend.llvmir.value.Value;
+import midend.llvmir.value.instr.*;
 import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.SymbolTable;
 import frontend.semantics.symbol.VarSymbol;

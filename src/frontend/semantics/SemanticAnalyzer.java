@@ -1,10 +1,8 @@
 package frontend.semantics;
 
-import frontend.semantics.llvmir.IRBuilder;
-import frontend.semantics.llvmir.value.Module;
-import frontend.semantics.llvmir.value.Value;
+import midend.llvmir.IRBuilder;
+import midend.llvmir.value.Module;
 import frontend.semantics.symbol.SymbolManager;
-import frontend.semantics.symbol.SymbolTable;
 import frontend.syntax.ast.Node;
 
 public class SemanticAnalyzer {

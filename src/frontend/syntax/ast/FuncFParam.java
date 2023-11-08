@@ -1,9 +1,9 @@
 package frontend.syntax.ast;
 
-import frontend.semantics.llvmir.IRBuilder;
-import frontend.semantics.llvmir.value.Param;
-import frontend.semantics.llvmir.value.Value;
-import frontend.semantics.llvmir.value.instr.AllocaInstr;
+import midend.llvmir.IRBuilder;
+import midend.llvmir.value.Param;
+import midend.llvmir.value.Value;
+import midend.llvmir.value.instr.AllocaInstr;
 import frontend.semantics.symbol.SymbolManager;
 import frontend.semantics.symbol.VarSymbol;
 import frontend.syntax.SyntaxType;
