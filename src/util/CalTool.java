@@ -2,7 +2,7 @@ package util;
 
 public class CalTool {
 
-    public static int length(String value) {
+    public static int getLLVMStrLength(String value) {
         int valueLength = 0;
         String chinese = "[\u0391-\uFFE5]";
         for (int i = 0; i < value.length(); i++) {

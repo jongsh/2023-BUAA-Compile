@@ -5,17 +5,17 @@ import midend.llvmir.value.BasicBlock;
 import midend.llvmir.value.User;
 
 public class Instr extends User {
-    protected BasicBlock prev;
+    protected BasicBlock belong;
     protected InstrType instrType;
 
-    public Instr(String name, ValueType valueType, InstrType instrType, BasicBlock prev) {
+    public Instr(String name, ValueType valueType, InstrType instrType, BasicBlock belong) {
         super(name, valueType);
-        this.prev = prev;
+        this.belong = belong;
         this.instrType = instrType;
     }
 
-    public BasicBlock getPrev() {
-        return prev;
+    public BasicBlock getBelong() {
+        return belong;
     }
 
     public InstrType getInstrType() {

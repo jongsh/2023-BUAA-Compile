@@ -46,4 +46,21 @@ public class Module extends Value {
         }
         return sb.toString();
     }
+
+    @Override
+    public String toMips() {
+        StringBuilder sb = new StringBuilder(declareList);
+        for (GlobalVar globalVar : globalVarList) {
+            sb.append("\n").append(globalVar);
+        }
+        sb.append("\n");
+        for (GlobalStr globalStr : globalStrList) {
+            sb.append("\n").append(globalStr);
+        }
+        sb.append("\n");
+        for (Function function : functionList) {
+            sb.append("\n").append(function.toDefineString()).append("\n");
+        }
+        return sb.toString();
+    }
 }

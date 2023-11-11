@@ -5,12 +5,10 @@ import midend.llvmir.value.Value;
 
 public class StoreInstr extends Instr {
 
-    public StoreInstr(BasicBlock prev, Value from, Value to) {
-        super("", null, InstrType.STORE, prev);
+    public StoreInstr(BasicBlock belong, Value from, Value to) {
+        super("", null, InstrType.STORE, belong);
         super.addOperand(from);
         super.addOperand(to);
-
-
     }
 
     @Override

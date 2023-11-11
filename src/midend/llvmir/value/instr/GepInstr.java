@@ -7,9 +7,9 @@ import midend.llvmir.value.Value;
 
 public class GepInstr extends Instr {
 
-    public GepInstr(String name, Value target, BasicBlock prev) {
+    public GepInstr(String name, Value target, BasicBlock belong) {
         // target 是目标数组
-        super(name, target.getValueType(), InstrType.GETELEMENTPTR, prev);
+        super(name, target.getValueType(), InstrType.GETELEMENTPTR, belong);
         super.addOperand(target);
     }
 

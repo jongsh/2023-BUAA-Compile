@@ -28,4 +28,8 @@ public class Value {
     public String toString() {
         return valueType.toString() + " " + name;
     }
+
+    public String toMips() {
+        return "";
+    }
 }

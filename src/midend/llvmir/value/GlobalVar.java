@@ -5,13 +5,13 @@ import midend.llvmir.type.PointerType;
 import midend.llvmir.type.ValueType;
 
 public class GlobalVar extends Value {
-    private final Module prev;
+    private final Module belong;
     private final boolean isConst;
 
-    public GlobalVar(boolean isConst, String name, ValueType type, Module prev) {
+    public GlobalVar(boolean isConst, String name, ValueType type, Module belong) {
         super(name, new PointerType(type));
         this.isConst = isConst;
-        this.prev = prev;
+        this.belong = belong;
     }
 
     @Override

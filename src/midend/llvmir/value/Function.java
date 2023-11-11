@@ -5,14 +5,13 @@ import midend.llvmir.type.ValueType;
 import java.util.ArrayList;
 
 public class Function extends User {
-    private final Module prev;
+    private final Module belong;
     private final ArrayList<Param> paramList;
     private final ArrayList<BasicBlock> basicBlockList;
-    private Value retValue;
 
-    public Function(String name, ValueType type, Module prev) {
+    public Function(String name, ValueType type, Module belong) {
         super(name, type);
-        this.prev = prev;
+        this.belong = belong;
         this.basicBlockList = new ArrayList<>();
         this.paramList = new ArrayList<>();
     }
@@ -23,10 +22,6 @@ public class Function extends User {
 
     public void addParam(Param param) {
         this.paramList.add(param);
-    }
-
-    public Value getRetValue() {
-        return retValue;
     }
 
     public void addOperands(ArrayList<Value> operands) {

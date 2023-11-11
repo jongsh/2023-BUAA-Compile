@@ -6,8 +6,8 @@ import midend.llvmir.value.Value;
 
 public class AluInstr extends Instr {
 
-    public AluInstr(String name, ValueType valueType, InstrType instrType, BasicBlock prev) {
-        super(name, valueType, instrType, prev);
+    public AluInstr(String name, ValueType valueType, InstrType instrType, BasicBlock belong) {
+        super(name, valueType, instrType, belong);
     }
 
     public void addOperands(Value operand1, Value operand2) {

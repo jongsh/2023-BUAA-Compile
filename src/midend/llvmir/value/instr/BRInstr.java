@@ -6,13 +6,13 @@ import midend.llvmir.value.Value;
 
 public class BRInstr extends Instr {
 
-    public BRInstr(BasicBlock obj, BasicBlock prev) {
-        super("", new ValueType(), InstrType.BR, prev);
+    public BRInstr(BasicBlock obj, BasicBlock belong) {
+        super("", new ValueType(), InstrType.BR, belong);
         super.addOperand(obj);
     }
 
-    public BRInstr(Value condValue, BasicBlock trueObj, BasicBlock falseObj, BasicBlock prev) {
-        super("", new ValueType(), InstrType.BR, prev);
+    public BRInstr(Value condValue, BasicBlock trueObj, BasicBlock falseObj, BasicBlock belong) {
+        super("", new ValueType(), InstrType.BR, belong);
         super.addOperand(condValue);
         super.addOperand(trueObj);
         super.addOperand(falseObj);

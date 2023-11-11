@@ -14,10 +14,10 @@ public class IcmpInstr extends Instr {
         }
     }
 
-    private IcmpType icmpType;
+    private final IcmpType icmpType;
 
-    public IcmpInstr(String name, IcmpType icmpType, Value operand1, Value operand2, BasicBlock prev) {
-        super(name, new VarType(1), InstrType.ICMP, prev);
+    public IcmpInstr(String name, IcmpType icmpType, Value operand1, Value operand2, BasicBlock belong) {
+        super(name, new VarType(1), InstrType.ICMP, belong);
         this.icmpType = icmpType;
         super.addOperand(operand1);
         super.addOperand(operand2);

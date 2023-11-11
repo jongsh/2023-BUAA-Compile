@@ -6,8 +6,8 @@ import midend.llvmir.value.Value;
 
 public class ZextInstr extends Instr {
 
-    public ZextInstr(String name, ValueType type, Value operand, BasicBlock prev) {
-        super(name, type, InstrType.ZEXT, prev);
+    public ZextInstr(String name, ValueType type, Value operand, BasicBlock belong) {
+        super(name, type, InstrType.ZEXT, belong);
         super.addOperand(operand);
     }
 

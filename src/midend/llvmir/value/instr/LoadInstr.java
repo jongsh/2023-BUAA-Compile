@@ -6,8 +6,8 @@ import midend.llvmir.value.Value;
 
 public class LoadInstr extends Instr {
 
-    public LoadInstr(String name, Value target, BasicBlock prev) {
-        super(name, ((PointerType) target.getValueType()).getTargetType(), InstrType.LOAD, prev);
+    public LoadInstr(String name, Value target, BasicBlock belong) {
+        super(name, ((PointerType) target.getValueType()).getTargetType(), InstrType.LOAD, belong);
         super.addOperand(target);
     }
 

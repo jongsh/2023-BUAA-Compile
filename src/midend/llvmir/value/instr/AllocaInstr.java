@@ -6,8 +6,8 @@ import midend.llvmir.value.BasicBlock;
 
 public class AllocaInstr extends Instr {
 
-    public AllocaInstr(String name, ValueType valueType, BasicBlock prev) {
-        super(name, new PointerType(valueType), InstrType.ALLOCA, prev);
+    public AllocaInstr(String name, ValueType valueType, BasicBlock belong) {
+        super(name, new PointerType(valueType), InstrType.ALLOCA, belong);
     }
 
     @Override

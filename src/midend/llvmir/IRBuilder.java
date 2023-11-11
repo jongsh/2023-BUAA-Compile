@@ -66,7 +66,7 @@ public class IRBuilder {
 
     // ----------------------- 全局字符串 ------------------------ //
     public GlobalStr newGlobalStr(String str) {
-        int length = CalTool.length(str) + 1;
+        int length = CalTool.getLLVMStrLength(str) + 1;
         String actualStr = str.replace("\\n", "\\0A") + "\\00";
         return new GlobalStr(GLOBAL_STR + (globalStrCnt++), actualStr, length, module);
     }

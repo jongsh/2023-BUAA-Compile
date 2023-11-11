@@ -6,8 +6,8 @@ import midend.llvmir.value.Value;
 
 public class RetInstr extends Instr {
 
-    public RetInstr(Value retValue, BasicBlock prev) {
-        super("", new ValueType(), InstrType.RET, prev);
+    public RetInstr(Value retValue, BasicBlock belong) {
+        super("", new ValueType(), InstrType.RET, belong);
         super.addOperand(retValue);
     }
 
