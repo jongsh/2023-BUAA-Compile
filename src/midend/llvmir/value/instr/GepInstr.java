@@ -1,9 +1,15 @@
 package midend.llvmir.value.instr;
 
+import backend.mips.MipsBuilder;
+import backend.mips.MipsProcedure;
 import midend.llvmir.type.ArrayType;
 import midend.llvmir.type.PointerType;
+import midend.llvmir.type.ValueType;
+import midend.llvmir.type.VarType;
 import midend.llvmir.value.BasicBlock;
 import midend.llvmir.value.Value;
+
+import java.util.ArrayList;
 
 public class GepInstr extends Instr {
 
@@ -29,5 +35,20 @@ public class GepInstr extends Instr {
             sb.append(", ").append(operand.getValueType()).append(" ").append(operand.getName());
         }
         return sb.toString();
+    }
+
+    @Override
+    public void toMips() {
+        ArrayList<Integer> dimensions = new ArrayList<>();
+        ValueType tempType = operands.get(0).getValueType();
+        while (((PointerType) tempType).getTargetType().size() != 1) {
+            dimensions.add(((PointerType) tempType).getTargetType().size());
+            tempType = ((ArrayType) ((PointerType) tempType).getTargetType()).toPointerType();
+        }
+        dimensions.add(1);
+        // 数组元素单元长度
+        int basicLength = ((VarType) ((PointerType) tempType).getTargetType()).getWidth() / 8;
+        MipsBuilder.getInstance().gepInstrToCmd(this, operands.get(0), basicLength,
+                new ArrayList<>(operands.subList(1, operands.size())), dimensions);
     }
 }

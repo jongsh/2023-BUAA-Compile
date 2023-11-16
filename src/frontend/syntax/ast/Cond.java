@@ -3,7 +3,7 @@ package frontend.syntax.ast;
 import midend.llvmir.IRBuilder;
 import midend.llvmir.value.BasicBlock;
 import midend.llvmir.value.Value;
-import midend.llvmir.value.instr.BRInstr;
+import midend.llvmir.value.instr.BrInstr;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class Cond extends Node {
 
         Value value = children.get(0).genIR();
 
-        BRInstr brInstr = IRBuilder.getInstance().newBRInstr(value, trueBlock, falseBlock);
+        BrInstr brInstr = IRBuilder.getInstance().newBRInstr(value, trueBlock, falseBlock);
         IRBuilder.getInstance().addInstr(brInstr);
         return null;
     }

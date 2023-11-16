@@ -1,5 +1,6 @@
 package midend.llvmir.value;
 
+import backend.mips.MipsBuilder;
 import midend.llvmir.type.ArrayType;
 import midend.llvmir.type.PointerType;
 
@@ -17,6 +18,12 @@ public class GlobalStr extends Value {
 
     @Override
     public String toString() {
-        return name + " = constant " + ((PointerType) valueType).getTargetType() + " c\"" + content + "\"";
+        String LLVMStr = content.replace("\\n", "\\0A") + "\\00";
+        return name + " = constant " + ((PointerType) valueType).getTargetType() + " c\"" + LLVMStr + "\"";
+    }
+
+    @Override
+    public void toMips() {
+        MipsBuilder.getInstance().globalStrToCmd(name.substring(1), content);
     }
 }

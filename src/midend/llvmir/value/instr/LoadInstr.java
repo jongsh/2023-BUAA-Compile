@@ -11,6 +11,9 @@ public class LoadInstr extends Instr {
         super.addOperand(target);
     }
 
+    public Value getTarget() {
+        return this.operands.get(0);
+    }
 
     @Override
     public String toString() {

@@ -1,5 +1,6 @@
 package midend.llvmir.value;
 
+import backend.mips.MipsBuilder;
 import midend.llvmir.type.ValueType;
 
 import java.util.ArrayList;
@@ -30,6 +31,10 @@ public class Module extends Value {
         this.functionList.add(function);
     }
 
+    public ArrayList<Function> getFunctionList() {
+        return functionList;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(declareList);
@@ -48,19 +53,17 @@ public class Module extends Value {
     }
 
     @Override
-    public String toMips() {
-        StringBuilder sb = new StringBuilder(declareList);
+    public void toMips() {
         for (GlobalVar globalVar : globalVarList) {
-            sb.append("\n").append(globalVar);
+            globalVar.toMips();
         }
-        sb.append("\n");
         for (GlobalStr globalStr : globalStrList) {
-            sb.append("\n").append(globalStr);
+            globalStr.toMips();
         }
-        sb.append("\n");
-        for (Function function : functionList) {
-            sb.append("\n").append(function.toDefineString()).append("\n");
+        functionList.get(functionList.size() - 1).toMips();  // main 函数
+        for (int i = 0; i < functionList.size() - 1; i++) {
+            functionList.get(i).toMips();
         }
-        return sb.toString();
+        MipsBuilder.getInstance().addLabelCmd("end");
     }
 }

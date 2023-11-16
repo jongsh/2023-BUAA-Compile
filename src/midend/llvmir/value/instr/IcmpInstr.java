@@ -4,6 +4,9 @@ import midend.llvmir.type.VarType;
 import midend.llvmir.value.BasicBlock;
 import midend.llvmir.value.Value;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class IcmpInstr extends Instr {
     public enum IcmpType {
         ne, eq, slt, sgt, sle, sge;
@@ -23,11 +26,20 @@ public class IcmpInstr extends Instr {
         super.addOperand(operand2);
     }
 
+    public String getIcmpCond() {
+        return (icmpType.equals(IcmpType.eq)) ? "==" : (icmpType.equals(IcmpType.ne)) ? "!=" :
+                (icmpType.equals(IcmpType.slt)) ? "<" : (icmpType.equals(IcmpType.sle)) ? "<=" :
+                        (icmpType.equals(IcmpType.sgt)) ? ">" : (icmpType.equals(IcmpType.sge)) ? ">=" : "";
+    }
+
+    public ArrayList<Value> getIcmpOperand() {
+        return new ArrayList<>(operands);
+    }
+
     @Override
     public String toString() {
-        return name + " = " + instrType + " " + icmpType +" "+ operands.get(0).getValueType()
+        return name + " = " + instrType + " " + icmpType + " " + operands.get(0).getValueType()
                 + " " + operands.get(0).getName() + ", " + operands.get(1).getName();
     }
 
-    // %3 = icmp eq i32 %2, 0
 }

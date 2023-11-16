@@ -64,21 +64,12 @@ public class FuncDef extends Node {
         BasicBlock basicBlock = IRBuilder.getInstance().newBasicBlock();
         IRBuilder.getInstance().addBasicBlock(basicBlock);
 
-//        BasicBlock returnBlock = IRBuilder.getInstance().newBasicBlock();   // 返回块
-//        IRBuilder.getInstance().addContext(returnBlock);
-//        if (funcSymbol.getType().equals("int")) {
-//            AllocaInstr allocaInstr = IRBuilder.getInstance().newAllocaInstr(new ArrayList<>()); // 分配返回值
-//            function.setRetValue(allocaInstr);
-//            IRBuilder.getInstance().addInstr(allocaInstr);
-//        }
-
         if (children.get(3).getType().equals(SyntaxType.FuncFParams)) {   // 检查是否有参数
             children.get(3).genIR();        // 函数形参
         }
         children.get(children.size() - 1).genIR();   // 函数块
 
         funcSymbol.setLLVMValue(function);
-        //IRBuilder.getInstance().addBasicBlock(returnBlock);
 
         if (funcSymbol.getType().equals("void")) {
             RetInstr retInstr = IRBuilder.getInstance().newRetInstr(null);

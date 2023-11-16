@@ -1,34 +1,47 @@
 package midend.llvmir.value;
 
+import backend.mips.MipsBuilder;
 import midend.llvmir.type.ValueType;
-import midend.llvmir.value.instr.BRInstr;
+import midend.llvmir.value.instr.BrInstr;
+import midend.llvmir.value.instr.IcmpInstr;
 import midend.llvmir.value.instr.Instr;
 import midend.llvmir.value.instr.RetInstr;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class BasicBlock extends Value {
     private final Function belong;
     private final ArrayList<Instr> instrList;
 
-    // CFG
-    private HashSet<BasicBlock> CFGChildren;
-    private HashSet<BasicBlock> DFTreeChildren;
-
     public BasicBlock(String name, Function belong) {
         super(name, new ValueType());
         this.belong = belong;
         this.instrList = new ArrayList<>();
-        this.CFGChildren = new HashSet<>();
     }
 
     public void addInstr(Instr instr) {
         if (instrList.size() > 0 && (instrList.get(instrList.size() - 1) instanceof RetInstr ||
-                instrList.get(instrList.size() - 1) instanceof BRInstr)) {
+                instrList.get(instrList.size() - 1) instanceof BrInstr)) {
             return;
         }
         instrList.add(instr);
+    }
+
+    public ArrayList<Instr> getInstrList() {
+        return instrList;
+    }
+
+    public Function getBelong() {
+        return belong;
+    }
+
+    public ArrayList<BasicBlock> getNextBlocks() {
+        Instr instr = instrList.get(instrList.size() - 1);
+        ArrayList<BasicBlock> ret = new ArrayList<>();
+        if (instr instanceof BrInstr) {
+            ret = ((BrInstr) instr).getNextBlocks();
+        }
+        return ret;
     }
 
     @Override
@@ -41,5 +54,15 @@ public class BasicBlock extends Value {
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public void toMips() {
+        MipsBuilder.getInstance().addLabelCmd(name);
+        for (Instr instr : instrList) {
+            if (!(instr instanceof IcmpInstr)) {
+                instr.toMips();
+            }
+        }
     }
 }

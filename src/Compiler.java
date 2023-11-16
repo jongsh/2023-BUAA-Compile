@@ -1,6 +1,12 @@
+import backend.AsmGenerator;
+import backend.mips.MipsBuilder;
+import backend.mips.MipsProcedure;
 import frontend.lexer.Lexer;
 import frontend.semantics.SemanticAnalyzer;
 import frontend.syntax.Parser;
+import midend.llvmir.value.Module;
+import midend.optimize.CFG;
+import midend.optimize.Optimizer;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,7 +17,7 @@ import java.util.Scanner;
 public class Compiler {
     public static void main(String[] args) {
         String inputFileName = "testfile.txt";
-        String outputFileName = "llvm_ir.txt";
+        String outputFileName = "mips.txt";
 
         Lexer lexer = new Lexer(inputFromFile(inputFileName));
         // 词法分析输出
@@ -24,10 +30,18 @@ public class Compiler {
         SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer(parser.parseCompUnit());
 
         // 错误处理输出
-        //outputToFile(outputFileName, semanticAnalyzer.testCheckError());
+        // outputToFile(outputFileName, semanticAnalyzer.testCheckError());
 
         // 中间代码生成
-        outputToFile(outputFileName, semanticAnalyzer.testGenIR());
+        Module module = semanticAnalyzer.genIR();
+        outputToFile("llvm_ir.txt", module.toString());
+
+        // 中间代码优化
+        //Optimizer.optimize(module);
+
+        // 目标代码生成
+        MipsProcedure procedure = AsmGenerator.getInstance().genMips(module);
+        outputToFile(outputFileName, procedure.toString());
     }
 
     private static String inputFromFile(String inputPath) {
@@ -58,6 +72,6 @@ public class Compiler {
         }
     }
 
-    private static void work() {
+    private static void run() {
     }
 }

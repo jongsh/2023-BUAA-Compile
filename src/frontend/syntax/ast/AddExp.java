@@ -44,7 +44,10 @@ public class AddExp extends Node {
         for (int i = 1; i < children.size(); i += 2) {
             String aluType = (children.get(i).getType().equals(SyntaxType.MINU)) ? "-" : "+";
             tempValue = children.get(i + 1).genIR();
-            if (retValue instanceof Digit && tempValue instanceof Digit) {
+            if (tempValue instanceof Digit && ((Digit) tempValue).getNum() == 0) {
+            } else if (retValue instanceof Digit && ((Digit) retValue).getNum() == 0) {
+                retValue = tempValue;
+            } else if (retValue instanceof Digit && tempValue instanceof Digit) {
                 retValue = Digit.calculate((Digit) retValue, (Digit) tempValue, aluType);
             } else {
                 aluInstr = IRBuilder.getInstance().newAluInstr(aluType);

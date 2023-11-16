@@ -5,4 +5,8 @@ public class ValueType {
     public String toString() {
         return "";
     }
+
+    public int size() {
+        return 1;
+    }
 }

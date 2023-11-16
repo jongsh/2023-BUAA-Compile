@@ -4,7 +4,7 @@ import midend.llvmir.IRBuilder;
 import midend.llvmir.type.VarType;
 import midend.llvmir.value.BasicBlock;
 import midend.llvmir.value.Value;
-import midend.llvmir.value.instr.BRInstr;
+import midend.llvmir.value.instr.BrInstr;
 import midend.llvmir.value.instr.Instr;
 import frontend.syntax.SyntaxType;
 
@@ -43,7 +43,7 @@ public class LAndExp extends Node {
                 IRBuilder.getInstance().addInstr((Instr) value);
             }
 
-            BRInstr brInstr = IRBuilder.getInstance().newBRInstr(value, block, falseBlock);
+            BrInstr brInstr = IRBuilder.getInstance().newBRInstr(value, block, falseBlock);
             IRBuilder.getInstance().addInstr(brInstr);
 
             IRBuilder.getInstance().addBasicBlock(block);

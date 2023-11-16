@@ -67,8 +67,7 @@ public class IRBuilder {
     // ----------------------- 全局字符串 ------------------------ //
     public GlobalStr newGlobalStr(String str) {
         int length = CalTool.getLLVMStrLength(str) + 1;
-        String actualStr = str.replace("\\n", "\\0A") + "\\00";
-        return new GlobalStr(GLOBAL_STR + (globalStrCnt++), actualStr, length, module);
+        return new GlobalStr(GLOBAL_STR + (globalStrCnt++), str, length, module);
     }
 
     public void addGlobalStr(GlobalStr globalStr) {
@@ -84,7 +83,6 @@ public class IRBuilder {
 
     public void addFunction(Function function) {
         pramCnt = 0;
-        basicBlockCnt = 0;
         localVarCnt = 0;
         module.addFunction(function);
         curFunction = function;
@@ -176,12 +174,12 @@ public class IRBuilder {
         );
     }
 
-    public BRInstr newBRInstr(BasicBlock obj) {
-        return new BRInstr(obj, curBasicBlock);
+    public BrInstr newBRInstr(BasicBlock obj) {
+        return new BrInstr(obj, curBasicBlock);
     }
 
-    public BRInstr newBRInstr(Value condValue, BasicBlock trueObj, BasicBlock falseObj) {
-        return new BRInstr(condValue, trueObj, falseObj, curBasicBlock);
+    public BrInstr newBRInstr(Value condValue, BasicBlock trueObj, BasicBlock falseObj) {
+        return new BrInstr(condValue, trueObj, falseObj, curBasicBlock);
     }
 
     public IcmpInstr newIcmpInstr(String op, Value operand1, Value operand2) {

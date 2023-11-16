@@ -1,5 +1,6 @@
 package midend.llvmir.value;
 
+import backend.mips.MipsBuilder;
 import midend.llvmir.type.Initializable;
 import midend.llvmir.type.PointerType;
 import midend.llvmir.type.ValueType;
@@ -17,12 +18,18 @@ public class GlobalVar extends Value {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        ValueType tempType = ((PointerType)valueType).getTargetType();
+        ValueType tempType = ((PointerType) valueType).getTargetType();
         if (isConst) {
-            sb.append(name).append(" = dso_local constant ").append(((Initializable) tempType).toInitString());
+            sb.append(name).append(" = dso_local constant ").append(((Initializable) tempType).toLLVMIRString());
         } else {
-            sb.append(name).append(" = dso_local global ").append(((Initializable) tempType).toInitString());
+            sb.append(name).append(" = dso_local global ").append(((Initializable) tempType).toLLVMIRString());
         }
         return sb.toString();
+    }
+
+    @Override
+    public void toMips() {
+        Initializable init = (Initializable) ((PointerType) valueType).getTargetType();
+        MipsBuilder.getInstance().globalVarToCmd(name.substring(1), init.getInitials());
     }
 }

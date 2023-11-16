@@ -21,4 +21,8 @@ public class Instr extends User {
     public InstrType getInstrType() {
         return instrType;
     }
+
+    @Override
+    public void toMips() {
+    }
 }

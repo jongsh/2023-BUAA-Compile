@@ -45,10 +45,14 @@ public class MulExp extends Node {
         for (int i = 1; i < children.size(); i += 2) {
             String aluType = (children.get(i).getType().equals(SyntaxType.MULT)) ? "*" :
                     (children.get(i).getType().equals(SyntaxType.DIV)) ? "/" : "%";
-
+            if (retValue instanceof Digit && ((Digit) retValue).getNum() == 0) {
+                continue;
+            }
             tempValue = children.get(i + 1).genIR();
             if (retValue instanceof Digit && tempValue instanceof Digit) {
                 retValue = Digit.calculate((Digit) retValue, (Digit) tempValue, aluType);
+            } else if (tempValue instanceof Digit && ((Digit) tempValue).getNum() == 0) {
+                retValue = tempValue;
             } else {
                 aluInstr = IRBuilder.getInstance().newAluInstr(aluType);
                 aluInstr.addOperands(retValue, tempValue);

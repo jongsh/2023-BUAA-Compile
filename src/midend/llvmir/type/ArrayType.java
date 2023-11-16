@@ -43,7 +43,7 @@ public class ArrayType extends PointerType implements Initializable {
                 for (int i = 0; i < integers.size(); i += nextLength) {
                     this.initials.add(
                             new ArrayType(dimensions.subList(1, dimensions.size()),
-                                    integers.subList(i, i+nextLength))
+                                    integers.subList(i, i + nextLength))
                     );
                 }
             }
@@ -68,12 +68,17 @@ public class ArrayType extends PointerType implements Initializable {
     }
 
     @Override
+    public int size() {
+        return cnt * eleType.size();
+    }
+
+    @Override
     public String toString() {
         return "[" + cnt + " x " + eleType + "]";
     }
 
     @Override
-    public String toInitString() {
+    public String toLLVMIRString() {
         StringBuilder sb = new StringBuilder();
         sb.append(this);
         if (zeroInitializer) {
@@ -81,8 +86,23 @@ public class ArrayType extends PointerType implements Initializable {
         }
         sb.append(" [");
         for (Initializable initial : initials) {
-            sb.append(initial.toInitString()).append(", ");
+            sb.append(initial.toLLVMIRString()).append(", ");
         }
         return sb.substring(0, sb.length() - 2) + "]";
+    }
+
+    @Override
+    public ArrayList<Integer> getInitials() {
+        ArrayList<Integer> ret = new ArrayList<>();
+        if (zeroInitializer) {
+            for (int i = 0; i < size(); ++i) {
+                ret.add(0);
+            }
+        } else {
+            for (Initializable init : initials) {
+                ret.addAll(init.getInitials());
+            }
+        }
+        return ret;
     }
 }

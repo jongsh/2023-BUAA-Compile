@@ -69,7 +69,7 @@ public class UnaryExp extends Node {
             if (children.size() > 2 && children.get(2).getType().equals(SyntaxType.FuncRParams)) {
                 SymbolManager.instance().createTable(SymbolTable.TableType.FUNC, false, funcName);
                 ArrayList<Value> operands = ((FuncRParams) children.get(2)).genIRs();
-                function.addOperands(operands);
+                function.addArguments(operands);
                 SymbolManager.instance().tracebackTable();
             }
 
@@ -83,9 +83,14 @@ public class UnaryExp extends Node {
         } else {  // UnaryOp UnaryExp
             Value retValue = children.get(1).genIR();
             if (children.get(0).searchNode(SyntaxType.NOT) != null) {
-                retValue = IRBuilder.getInstance().newIcmpInstr(
-                        "==", retValue, IRBuilder.getInstance().newDigit(0));
-                IRBuilder.getInstance().addInstr((Instr) retValue);
+                if (retValue instanceof Digit) {
+                    retValue = ((Digit) retValue).getNum() != 0 ? IRBuilder.getInstance().newDigit(0)
+                            : IRBuilder.getInstance().newDigit(1);
+                } else {
+                    retValue = IRBuilder.getInstance().newIcmpInstr(
+                            "==", retValue, IRBuilder.getInstance().newDigit(0));
+                    IRBuilder.getInstance().addInstr((Instr) retValue);
+                }
             } else if (children.get(0).searchNode(SyntaxType.MINU) != null) {
                 if (retValue instanceof Digit) {
                     retValue = Digit.calculate(IRBuilder.getInstance().newDigit(0), (Digit) retValue, "-");

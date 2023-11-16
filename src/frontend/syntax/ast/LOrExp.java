@@ -3,7 +3,7 @@ package frontend.syntax.ast;
 import midend.llvmir.IRBuilder;
 import midend.llvmir.value.BasicBlock;
 import midend.llvmir.value.Value;
-import midend.llvmir.value.instr.BRInstr;
+import midend.llvmir.value.instr.BrInstr;
 import frontend.syntax.SyntaxType;
 
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class LOrExp extends Node {
             IRBuilder.getInstance().setFalseBlock(block);  // 新的false block
 
             value = children.get(0).genIR();  // 递归解析 LAndExp
-            BRInstr brInstr = IRBuilder.getInstance().newBRInstr(value, trueBlock, block);
+            BrInstr brInstr = IRBuilder.getInstance().newBRInstr(value, trueBlock, block);
             IRBuilder.getInstance().addInstr(brInstr);
 
             IRBuilder.getInstance().addBasicBlock(block);

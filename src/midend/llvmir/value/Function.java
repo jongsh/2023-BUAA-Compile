@@ -1,5 +1,6 @@
 package midend.llvmir.value;
 
+import backend.mips.MipsBuilder;
 import midend.llvmir.type.ValueType;
 
 import java.util.ArrayList;
@@ -20,14 +21,28 @@ public class Function extends User {
         this.basicBlockList.add(basicBlock);
     }
 
+    public ArrayList<BasicBlock> getBasicBlockList() {
+        return basicBlockList;
+    }
+
+    // 函数定义增加形参
     public void addParam(Param param) {
         this.paramList.add(param);
     }
 
-    public void addOperands(ArrayList<Value> operands) {
+    public ArrayList<Param> getParamList() {
+        return paramList;
+    }
+
+    // 函数调用实参传值
+    public void addArguments(ArrayList<Value> operands) {
         for (Value operand : operands) {
             super.addOperand(operand);
         }
+    }
+
+    public ArrayList<Value> getArguments() {
+        return new ArrayList<>(operands);
     }
 
     public String toCallerString() {
@@ -43,7 +58,6 @@ public class Function extends User {
         sb.append(")");
         return sb.toString();
     }
-
 
     public String toDefineString() {
         StringBuilder sb = new StringBuilder();
@@ -61,5 +75,16 @@ public class Function extends User {
         }
         sb.append("}");
         return sb.toString();
+    }
+
+    @Override
+    public void toMips() {
+        MipsBuilder.getInstance().addNoteCmd("\n# function: " + name);
+        MipsBuilder.getInstance().addLabelCmd(name.substring(1));
+        MipsBuilder.getInstance().allocaRegs(this);
+        int i = (paramList.size() == 0) ? 0 : 1;
+        for (; i < basicBlockList.size(); ++i) {
+            basicBlockList.get(i).toMips();
+        }
     }
 }

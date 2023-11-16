@@ -29,7 +29,10 @@ public class Value {
         return valueType.toString() + " " + name;
     }
 
-    public String toMips() {
-        return "";
+    public void toMips() {
+    }
+
+    public int size() {
+        return valueType.size();
     }
 }

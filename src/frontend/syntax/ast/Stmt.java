@@ -165,7 +165,7 @@ public class Stmt extends Node {
 
                 IRBuilder.getInstance().addBasicBlock(trueBlock);
                 children.get(4).genIR();   // if stmt
-                BRInstr brInstr = IRBuilder.getInstance().newBRInstr(leaveBlock);
+                BrInstr brInstr = IRBuilder.getInstance().newBRInstr(leaveBlock);
                 IRBuilder.getInstance().addInstr(brInstr);
 
                 if (falseBlock != null) {
@@ -250,14 +250,8 @@ public class Stmt extends Node {
                 Function putIntFunc;
 
                 String str = ((LeafNode) children.get(2)).getContent();
-                ArrayList<Value> exps = new ArrayList<>();
-                for (int i = 4; i < children.size(); i += 2) {
-                    if (children.get(i).getType().equals(SyntaxType.Exp)) {
-                        exps.add(children.get(i).genIR());
-                    }
-                }
 
-                int strPos = 1, expPos = 0;
+                int strPos = 1, expPos = 4;
                 for (int i = 1; i < str.length() - 1; ++i) {
                     if (str.charAt(i) == '%' || i == str.length() - 2) {
                         String tempStr = str.substring(strPos, (str.charAt(i) == '%') ? i : i + 1);
@@ -279,7 +273,8 @@ public class Stmt extends Node {
                     }
                     if (str.charAt(i) == '%') {
                         putIntFunc = IRBuilder.getInstance().newFunction("void", "putint");
-                        putIntFunc.addOperand(exps.get(expPos++));
+                        putIntFunc.addOperand(children.get(expPos).genIR());
+                        expPos += 2;
                         CallInstr callInstr = IRBuilder.getInstance().newCallInstr(putIntFunc);
                         IRBuilder.getInstance().addInstr(callInstr);
                         i++;  // 跳过%d

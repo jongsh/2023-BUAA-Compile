@@ -1,5 +1,6 @@
 package midend.llvmir.value.instr;
 
+import backend.mips.MipsBuilder;
 import midend.llvmir.type.ValueType;
 import midend.llvmir.value.BasicBlock;
 import midend.llvmir.value.Value;
@@ -22,5 +23,13 @@ public class AluInstr extends Instr {
                         (instrType.equals(InstrType.MOD)) ? "srem" : "";
         return name + " = " + op + " " + valueType + " " +
                 operands.get(0).getName() + ", " + operands.get(1).getName();
+    }
+
+    @Override
+    public void toMips() {
+        String op = (instrType.equals(InstrType.ADD)) ? "+" : (instrType.equals(InstrType.SUB)) ? "-" :
+                (instrType.equals(InstrType.MUL)) ? "*" : (instrType.equals(InstrType.DIV)) ? "/" :
+                        (instrType.equals(InstrType.MOD)) ? "%" : "";
+        MipsBuilder.getInstance().aluInstrToCmd(op, this, operands.get(0), operands.get(1));
     }
 }
