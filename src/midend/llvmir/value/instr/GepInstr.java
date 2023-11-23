@@ -1,7 +1,6 @@
 package midend.llvmir.value.instr;
 
 import backend.mips.MipsBuilder;
-import backend.mips.MipsProcedure;
 import midend.llvmir.type.ArrayType;
 import midend.llvmir.type.PointerType;
 import midend.llvmir.type.ValueType;
@@ -41,7 +40,7 @@ public class GepInstr extends Instr {
     public void toMips() {
         ArrayList<Integer> dimensions = new ArrayList<>();
         ValueType tempType = operands.get(0).getValueType();
-        while (((PointerType) tempType).getTargetType().size() != 1) {
+        while (((PointerType) tempType).getTargetType() instanceof ArrayType) {
             dimensions.add(((PointerType) tempType).getTargetType().size());
             tempType = ((ArrayType) ((PointerType) tempType).getTargetType()).toPointerType();
         }

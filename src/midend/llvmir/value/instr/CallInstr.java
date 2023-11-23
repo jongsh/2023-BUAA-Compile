@@ -29,6 +29,6 @@ public class CallInstr extends Instr {
     public void toMips() {
         Function function = (Function) operands.get(0);
         ArrayList<Value> arguments = function.getArguments();
-        MipsBuilder.getInstance().callInstrToCmd(function.getName().substring(1), arguments);
+        MipsBuilder.getInstance().callInstrToCmd(this, function.getName().substring(1), arguments);
     }
 }

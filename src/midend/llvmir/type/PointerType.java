@@ -8,7 +8,6 @@ public class PointerType extends ValueType {
     }
 
     public PointerType() {
-
     }
 
     public ValueType getTargetType() {

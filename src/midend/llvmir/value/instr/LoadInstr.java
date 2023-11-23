@@ -1,5 +1,6 @@
 package midend.llvmir.value.instr;
 
+import backend.mips.MipsBuilder;
 import midend.llvmir.type.PointerType;
 import midend.llvmir.value.BasicBlock;
 import midend.llvmir.value.Value;
@@ -19,5 +20,10 @@ public class LoadInstr extends Instr {
     public String toString() {
         return name + " = " + instrType + " " + valueType + ", " +
                 operands.get(0).getValueType() + " " + operands.get(0).getName();
+    }
+
+    @Override
+    public void toMips() {
+        MipsBuilder.getInstance().loadInstrToCmd(operands.get(0), this);
     }
 }

@@ -5,7 +5,7 @@ import backend.mips.Reg;
 public class AluCmd implements TextCmd {
     public enum AluCmdOp {
         addiu, slti, xori,
-        addu, mul, subu, div, slt;
+        addu, mul, subu, xor, div, slt, sltu;
 
         @Override
         public String toString() {
