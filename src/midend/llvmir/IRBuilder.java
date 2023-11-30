@@ -10,6 +10,7 @@ import midend.llvmir.value.instr.*;
 import util.CalTool;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class IRBuilder {
@@ -24,13 +25,11 @@ public class IRBuilder {
     private int pramCnt = 0;
     private int basicBlockCnt = 0;
     private int localVarCnt = 0;
-    private Module module;
-    private Function curFunction;
-    private BasicBlock curBasicBlock;
-
-    private final ArrayList<BasicBlock> context = new ArrayList<>();
+    private Module module = null;
+    private Function curFunction = null;
+    private BasicBlock curBasicBlock = null;
+    private final ArrayList<BasicBlock> context = new ArrayList<>();  // 流程控制块的上下文信息
     private int contextPos = 0;
-
     private static IRBuilder instance = new IRBuilder();
 
     public static IRBuilder getInstance() {
@@ -83,7 +82,6 @@ public class IRBuilder {
 
     public void addFunction(Function function) {
         pramCnt = 0;
-        localVarCnt = 0;
         module.addFunction(function);
         curFunction = function;
     }
@@ -206,6 +204,11 @@ public class IRBuilder {
 
     public ZextInstr newZextInstr(Value source, ValueType to) {
         return new ZextInstr(LOCAL_VAR + (localVarCnt++), to, source, curBasicBlock);
+    }
+
+    public PhiInstr newPhiInstr(AllocaInstr baseInstr, BasicBlock block, ArrayList<BasicBlock> preBlocks) {
+        ValueType type = ((PointerType)baseInstr.getValueType()).getTargetType();
+        return new PhiInstr(LOCAL_VAR+(localVarCnt++), type, baseInstr, preBlocks, block);
     }
 
     public void addInstr(Instr instr) {

@@ -49,6 +49,7 @@ public class MipsBuilder {
         this.stackOffset = 0;
 
         spareRegs = new ArrayList<>(Arrays.asList(
+                Reg.$a1, Reg.$a2, Reg.$a3,
                 Reg.$t0, Reg.$t1, Reg.$t2, Reg.$t3, Reg.$t4, Reg.$t5, Reg.$t6, Reg.$t7,
                 Reg.$s0, Reg.$s1, Reg.$s2, Reg.$s3, Reg.$s4, Reg.$s5, Reg.$s6, Reg.$s7
         ));
@@ -61,13 +62,8 @@ public class MipsBuilder {
         }
 
         int i;
-        ArrayList<Reg> aRegs = new ArrayList<>(Arrays.asList(Reg.$a1, Reg.$a2, Reg.$a3));
         for (i = 0; i < params.size() * 2; i += 2) {
-//            if (i < 6) {
-//                valueRegMap.put(instrList.get(i), aRegs.get(i / 2));
-//            } else {
             valueStackMap.put(instrList.get(i), stackOffset);
-//            }
             stackOffset -= 4;
         }
         for (; i < instrList.size(); ++i) {
@@ -209,14 +205,9 @@ public class MipsBuilder {
                 }
                 // 函数传参
                 int tempStackOffset = stackOffset;
-                ArrayList<Reg> aRegs = new ArrayList<>(Arrays.asList(Reg.$a1, Reg.$a2, Reg.$a3));
-                for (int i = 0; i < arguments.size(); ++i) {
-                    Reg tempReg = takeRegOfValue(arguments.get(i), Reg.$t8, true);
-//                    if (i < 3) {
-//                        procedure.addTextCmd(new MoveCmd(aRegs.get(i), tempReg));
-//                    } else {
+                for (Value argument : arguments) {
+                    Reg tempReg = takeRegOfValue(argument, Reg.$t8, true);
                     procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, tempReg, Reg.$sp, tempStackOffset));
-//                    }
                     tempStackOffset -= 4;
                 }
                 // 更改 sp

@@ -14,5 +14,20 @@ public class User extends Value {
 
     public void addOperand(Value operand) {
         this.operands.add(operand);
+        operand.addUser(this);
+    }
+
+    public void modifyOperand(Value oldOperand, Value newOperand) {
+        int index = operands.indexOf(oldOperand);
+        operands.set(index, newOperand);
+        newOperand.addUser(this);
+    }
+
+    public void deleted() {
+        for (Value operand : operands) {
+            if (operand != null) {
+                operand.delete(this);
+            }
+        }
     }
 }

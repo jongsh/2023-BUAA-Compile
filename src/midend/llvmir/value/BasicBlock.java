@@ -31,6 +31,12 @@ public class BasicBlock extends Value {
         return instrList;
     }
 
+    public void deleted() {
+        for (Instr instr : instrList) {
+            instr.deleted();
+        }
+    }
+
     public Function getBelong() {
         return belong;
     }

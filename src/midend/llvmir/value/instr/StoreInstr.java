@@ -12,6 +12,19 @@ public class StoreInstr extends Instr {
         super.addOperand(to);
     }
 
+    public Value getFrom() {
+        return operands.get(0);
+    }
+
+    public Value getTo() {
+        return operands.get(1);
+    }
+
+    @Override
+    public boolean canBeDelete() {
+        return false;
+    }
+
     @Override
     public String toString() {
         return instrType + " " + operands.get(0).getValueType() + " " + operands.get(0).getName()

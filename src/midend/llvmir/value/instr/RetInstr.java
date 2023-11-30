@@ -13,6 +13,11 @@ public class RetInstr extends Instr {
     }
 
     @Override
+    public boolean canBeDelete() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return instrType + " " + operands.get(0).getValueType() + " " + operands.get(0).getName();
     }

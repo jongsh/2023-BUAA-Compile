@@ -32,6 +32,11 @@ public class BrInstr extends Instr {
     }
 
     @Override
+    public boolean canBeDelete() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         if (operands.size() > 1) {
             return instrType + " " + operands.get(0).getValueType() + " " + operands.get(0).getName()

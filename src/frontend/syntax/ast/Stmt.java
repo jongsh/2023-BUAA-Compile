@@ -181,9 +181,7 @@ public class Stmt extends Node {
             case FORTK:
                 children.get(2).genIR(); // ForStmt or ;
 
-                BasicBlock condBlock = (children.get(4).getType().equals(SyntaxType.Cond)
-                        || children.get(3).getType().equals(SyntaxType.Cond)) ?
-                        IRBuilder.getInstance().newBasicBlock() : null;
+                BasicBlock condBlock = IRBuilder.getInstance().newBasicBlock();
                 trueBlock = IRBuilder.getInstance().newBasicBlock();
                 leaveBlock = IRBuilder.getInstance().newBasicBlock();
                 BasicBlock iterBlock = (children.get(children.size() - 3).getType().equals(SyntaxType.ForStmt))
@@ -192,10 +190,11 @@ public class Stmt extends Node {
                 // 添加流程控制块上下文信息
                 IRBuilder.getInstance().addContext(trueBlock).addContext(null).addContext(leaveBlock);
 
-                if (condBlock != null) {
-                    brInstr = IRBuilder.getInstance().newBRInstr((condBlock));
-                    IRBuilder.getInstance().addInstr(brInstr);
-                    IRBuilder.getInstance().addBasicBlock(condBlock);
+                brInstr = IRBuilder.getInstance().newBRInstr((condBlock));
+                IRBuilder.getInstance().addInstr(brInstr);
+                IRBuilder.getInstance().addBasicBlock(condBlock);
+                if (children.get(4).getType().equals(SyntaxType.Cond)
+                        || children.get(3).getType().equals(SyntaxType.Cond)) {
                     children.get(3).genIR();
                     children.get(4).genIR();
                 } else {
@@ -265,18 +264,18 @@ public class Stmt extends Node {
                             );
                             IRBuilder.getInstance().addInstr(gepInstr);
                             putStrFunc = IRBuilder.getInstance().newFunction("void", "putstr");
-                            putStrFunc.addOperand(gepInstr);
                             CallInstr callInstr = IRBuilder.getInstance().newCallInstr(putStrFunc);
+                            callInstr.addOperand(gepInstr);
                             IRBuilder.getInstance().addInstr(callInstr);
                         }
                         strPos = i + 2;
                     }
                     if (str.charAt(i) == '%') {
                         putIntFunc = IRBuilder.getInstance().newFunction("void", "putint");
-                        putIntFunc.addOperand(children.get(expPos).genIR());
-                        expPos += 2;
                         CallInstr callInstr = IRBuilder.getInstance().newCallInstr(putIntFunc);
+                        callInstr.addOperand(children.get(expPos).genIR());
                         IRBuilder.getInstance().addInstr(callInstr);
+                        expPos += 2;
                         i++;  // 跳过%d
                     }
                 }

@@ -6,6 +6,7 @@ import util.CalTool;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class CFG {
     private final Function function;
@@ -27,9 +28,26 @@ public class CFG {
         this.dfList = new HashMap<>();
         this.function = function;
         init();
-        genDom();   // 生成严格支配集合
-        genDT();    // 生成支配树
-        genDF();    // 生成支配边界集合
+        clearDeadBlock(); //     // 删除不可达的 block
+        genDom();                // 生成严格支配集合
+        genDT();                 // 生成支配树
+        genDF();                 // 生成支配边界集合
+    }
+
+    public ArrayList<BasicBlock> getDFListOf(BasicBlock block) {
+        return dfList.get(block);
+    }
+
+    public ArrayList<BasicBlock> getCFGChildrenList(BasicBlock block) {
+        return cfgNextList.get(block);
+    }
+
+    public ArrayList<BasicBlock> getCFGFatherList(BasicBlock block) {
+        return cfgPrevList.get(block);
+    }
+
+    public ArrayList<BasicBlock> getDTChildrenList(BasicBlock block) {
+        return dtNextList.get(block);
     }
 
     // 生成流图和支配关系
@@ -61,6 +79,9 @@ public class CFG {
     private void genDom() {
         ArrayList<BasicBlock> total = function.getBasicBlockList();
         for (BasicBlock block : total) {
+            if (block.getName().equals("block_19")) {
+                int m = 1;
+            }
             ArrayList<BasicBlock> record = new ArrayList<>();
             record.add(total.get(0));  // 入口块
             record.add(block);         // 目标块
@@ -80,7 +101,7 @@ public class CFG {
         }
     }
 
-    public void genDT() {
+    private void genDT() {
         ArrayList<BasicBlock> total = function.getBasicBlockList();
         for (BasicBlock dom : total) {
             for (BasicBlock domed : domList.get(dom)) {
@@ -95,7 +116,7 @@ public class CFG {
         }
     }
 
-    public void genDF() {
+    private void genDF() {
         ArrayList<BasicBlock> total = function.getBasicBlockList();
         for (BasicBlock vertex : total) {
             for (BasicBlock target : cfgNextList.get(vertex)) {
@@ -109,12 +130,43 @@ public class CFG {
         }
     }
 
+    private void clearDeadBlock() {
+        ArrayList<BasicBlock> total = function.getBasicBlockList();
+        HashSet<BasicBlock> aliveBlocks = new HashSet<>();
+        findAliveBlock(total.get(0), aliveBlocks);
+        for (int i = 0; i < total.size(); ++i) {
+            if (!aliveBlocks.contains(total.get(i))) {
+                for (BasicBlock nextBlock: cfgNextList.get(total.get(i))) {
+                    cfgPrevList.get(nextBlock).remove(total.get(i));
+                }
+                cfgNextList.remove(total.get(i));
+                cfgPrevList.remove(total.get(i));
+                domList.remove(total.get(i));
+                dtNextList.remove(total.get(i));
+                dtPrevList.remove(total.get(i));
+                dfList.remove(total.get(i));
+                total.get(i).deleted();
+                total.remove(i);
+                i--;
+            }
+        }
+    }
+
+    private void findAliveBlock(BasicBlock entry, HashSet<BasicBlock> aliveBlocks) {
+        aliveBlocks.add(entry);
+        for (BasicBlock block : cfgNextList.get(entry)) {
+            if (!aliveBlocks.contains(block)) {
+                findAliveBlock(block, aliveBlocks);
+            }
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (BasicBlock from : dfList.keySet()) {
+        for (BasicBlock from : cfgNextList.keySet()) {
             sb.append(from.getName()).append(" --->");
-            for (BasicBlock to : dfList.get(from)) {
+            for (BasicBlock to : cfgNextList.get(from)) {
                 sb.append("  ").append(to.getName());
             }
             sb.append("\n");

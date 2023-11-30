@@ -5,7 +5,6 @@ import frontend.lexer.Lexer;
 import frontend.semantics.SemanticAnalyzer;
 import frontend.syntax.Parser;
 import midend.llvmir.value.Module;
-import midend.optimize.CFG;
 import midend.optimize.Optimizer;
 
 import java.io.File;
@@ -34,14 +33,15 @@ public class Compiler {
 
         // 中间代码生成
         Module module = semanticAnalyzer.genIR();
-        outputToFile("llvm_ir.txt", module.toString());
+        //outputToFile("llvm_ir.txt", module.toString());
 
         // 中间代码优化
-        //Optimizer.optimize(module);
+        Optimizer.optimize(module);
+        outputToFile("llvm_ir.txt", module.toString());
 
         // 目标代码生成
-        MipsProcedure procedure = AsmGenerator.getInstance().genMips(module);
-        outputToFile(outputFileName, procedure.toString());
+        //MipsProcedure procedure = AsmGenerator.getInstance().genMips(module);
+        //outputToFile(outputFileName, procedure.toString());
     }
 
     private static String inputFromFile(String inputPath) {

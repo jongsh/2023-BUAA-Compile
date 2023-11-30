@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Function extends User {
     private final Module belong;
-    private final ArrayList<Param> paramList;
+    private final ArrayList<Param> paramList;  // 函数定义时的形参
     private final ArrayList<BasicBlock> basicBlockList;
 
     public Function(String name, ValueType type, Module belong) {
@@ -34,29 +34,8 @@ public class Function extends User {
         return paramList;
     }
 
-    // 函数调用实参传值
-    public void addArguments(ArrayList<Value> operands) {
-        for (Value operand : operands) {
-            super.addOperand(operand);
-        }
-    }
-
-    public ArrayList<Value> getArguments() {
-        return new ArrayList<>(operands);
-    }
-
     public String toCallerString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(valueType).append(" ").append(name);
-        sb.append("(");
-        for (Value operand : operands) {
-            sb.append(operand.getValueType()).append(" ").append(operand.getName()).append(", ");
-        }
-        if (operands.size() > 0) {
-            sb.delete(sb.length() - 2, sb.length());
-        }
-        sb.append(")");
-        return sb.toString();
+        return valueType + " " + name;
     }
 
     public String toDefineString() {

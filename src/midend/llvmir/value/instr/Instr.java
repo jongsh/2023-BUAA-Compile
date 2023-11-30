@@ -22,6 +22,10 @@ public class Instr extends User {
         return instrType;
     }
 
+    public boolean canBeDelete() {
+        return true;
+    }
+
     @Override
     public void toMips() {
     }
