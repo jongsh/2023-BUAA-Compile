@@ -17,6 +17,10 @@ public class User extends Value {
         operand.addUser(this);
     }
 
+    public ArrayList<Value> getOperands() {
+        return operands;
+    }
+
     public void modifyOperand(Value oldOperand, Value newOperand) {
         int index = operands.indexOf(oldOperand);
         operands.set(index, newOperand);

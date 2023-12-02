@@ -53,6 +53,33 @@ public class MulExp extends Node {
                 retValue = Digit.calculate((Digit) retValue, (Digit) tempValue, aluType);
             } else if (tempValue instanceof Digit && ((Digit) tempValue).getNum() == 0) {
                 retValue = tempValue;
+            } else if (tempValue instanceof Digit && ((Digit) tempValue).getNum() == 1) {
+                continue;
+            } else if (tempValue instanceof Digit && ((Digit) tempValue).getNum() == 2 && aluType.equals("*")) {
+                aluInstr = IRBuilder.getInstance().newAluInstr("+");
+                aluInstr.addOperands(retValue, retValue);
+                IRBuilder.getInstance().addInstr(aluInstr);
+                retValue = aluInstr;
+            } else if (retValue instanceof Digit && ((Digit) retValue).getNum() == 2 && aluType.equals("*")) {
+                aluInstr = IRBuilder.getInstance().newAluInstr("+");
+                aluInstr.addOperands(tempValue, tempValue);
+                IRBuilder.getInstance().addInstr(aluInstr);
+                retValue = aluInstr;
+            } else if (retValue != null && retValue.equals(tempValue)) {
+                switch (aluType) {
+                    case "/":
+                        retValue = IRBuilder.getInstance().newDigit(1);
+                        break;
+                    case "%":
+                        retValue = IRBuilder.getInstance().newDigit(0);
+                        break;
+                    case "*":
+                        aluInstr = IRBuilder.getInstance().newAluInstr(aluType);
+                        aluInstr.addOperands(retValue, tempValue);
+                        IRBuilder.getInstance().addInstr(aluInstr);
+                        retValue = aluInstr;
+                        break;
+                }
             } else {
                 aluInstr = IRBuilder.getInstance().newAluInstr(aluType);
                 aluInstr.addOperands(retValue, tempValue);

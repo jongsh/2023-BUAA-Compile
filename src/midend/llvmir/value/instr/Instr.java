@@ -3,6 +3,9 @@ package midend.llvmir.value.instr;
 import midend.llvmir.type.ValueType;
 import midend.llvmir.value.BasicBlock;
 import midend.llvmir.value.User;
+import midend.llvmir.value.Value;
+
+import java.util.ArrayList;
 
 public class Instr extends User {
     protected BasicBlock belong;
@@ -24,6 +27,10 @@ public class Instr extends User {
 
     public boolean canBeDelete() {
         return true;
+    }
+
+    public String toGVNString() {
+        return instrType.toString();
     }
 
     @Override

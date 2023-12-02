@@ -1,6 +1,9 @@
 package midend.llvmir.value;
 
 import midend.llvmir.type.ValueType;
+import midend.llvmir.value.instr.Instr;
+
+import java.util.ArrayList;
 
 public class Digit extends Value {
     public Digit(Integer number, ValueType type) {
@@ -29,6 +32,19 @@ public class Digit extends Value {
             default:
                 return null;
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Digit) {
+            return ((Digit) obj).getNum() == this.getNum() && ((Digit) obj).getValueType().equals(this.valueType);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
     }
 
     @Override

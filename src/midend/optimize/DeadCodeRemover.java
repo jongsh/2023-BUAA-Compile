@@ -10,34 +10,24 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 public class DeadCodeRemover {
-    private Module module;
 
-    private static DeadCodeRemover instance = new DeadCodeRemover();
-
-    public static DeadCodeRemover getInstance() {
-        return instance;
-    }
-
-    public void run(Module module) {
-        this.module = module;
+    public static void deleteDeadInstr(Function function) {
         HashSet<Instr> deadInstrSet = new HashSet<>();
         HashSet<Instr> records = new HashSet<>();
-        for (Function function : module.getFunctionList()) {
-            for (BasicBlock block : function.getBasicBlockList()) {
-                ArrayList<Instr> instrList = block.getInstrList();
-                for (int i = 0; i < instrList.size(); ++i) {
-                    if (deleteDeadInstrDFS(instrList.get(i), deadInstrSet, records)) {
-                        instrList.get(i).deleted();
-                        instrList.remove(i);
-                        i--;
-                    }
+        for (BasicBlock block : function.getBasicBlockList()) {
+            ArrayList<Instr> instrList = block.getInstrList();
+            for (int i = 0; i < instrList.size(); ++i) {
+                if (deleteDeadInstrDFS(instrList.get(i), deadInstrSet, records)) {
+                    instrList.get(i).deleted();
+                    instrList.remove(i);
+                    i--;
                 }
             }
         }
     }
 
     // 递归判断是否可以删除指令
-    public boolean deleteDeadInstrDFS(Instr instr, HashSet<Instr> deadInstrSet, HashSet<Instr> records) {
+    private static boolean deleteDeadInstrDFS(Instr instr, HashSet<Instr> deadInstrSet, HashSet<Instr> records) {
         if (!instr.canBeDelete()) {
             // 不可删除
             return false;

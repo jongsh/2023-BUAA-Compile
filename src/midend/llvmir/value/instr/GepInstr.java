@@ -26,6 +26,17 @@ public class GepInstr extends Instr {
     }
 
     @Override
+    public String toGVNString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(instrType).append(" ");
+        sb.append(((PointerType) operands.get(0).getValueType()).getTargetType());
+        for (Value operand : operands) {
+            sb.append(", ").append(operand.getValueType()).append(" ").append(operand.getName());
+        }
+        return sb.toString();
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(name).append(" = ").append(instrType).append(" ");

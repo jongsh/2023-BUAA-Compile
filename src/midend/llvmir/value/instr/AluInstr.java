@@ -17,6 +17,25 @@ public class AluInstr extends Instr {
     }
 
     @Override
+    public String toGVNString() {
+        String op = (instrType.equals(InstrType.ADD)) ? "add" : (instrType.equals(InstrType.SUB)) ? "sub" :
+                (instrType.equals(InstrType.MUL)) ? "mul" : (instrType.equals(InstrType.DIV)) ? "sdiv" :
+                        (instrType.equals(InstrType.MOD)) ? "srem" : "";
+        StringBuilder sb = new StringBuilder(op + " " + valueType + " ");
+        if (op.equals("add") || op.equals("mul")) {
+            if (operands.get(0).getName().hashCode() < operands.get(1).getName().hashCode()) {
+                sb.append(operands.get(0).getName()).append(operands.get(1).getName());
+            } else {
+                sb.append(operands.get(1).getName()).append(operands.get(0).getName());
+
+            }
+        } else {
+            sb.append(operands.get(0).getName()).append(operands.get(1).getName());
+        }
+        return sb.toString();
+    }
+
+    @Override
     public String toString() {
         String op = (instrType.equals(InstrType.ADD)) ? "add" : (instrType.equals(InstrType.SUB)) ? "sub" :
                 (instrType.equals(InstrType.MUL)) ? "mul" : (instrType.equals(InstrType.DIV)) ? "sdiv" :

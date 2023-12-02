@@ -11,15 +11,12 @@ import midend.llvmir.value.instr.*;
 import java.util.*;
 
 public class SSA {
-    private final Function function;
-    private final CFG cfg;
+    private static Function function;
+    private static CFG cfg;
 
-    public SSA(Function function) {
-        this.function = function;
-        this.cfg = new CFG(function);
-    }
-
-    public void transToSSA() {
+    public static void transToSSA(Function f, CFG c) {
+        function = f;
+        cfg = c;
         HashMap<Value, Stack<Value>> varValueMap = new HashMap<>();
         HashSet<BasicBlock> defBlocks = new HashSet<>();
         // 遍历函数的每个 alloca 定义，转化成 SSA
@@ -47,7 +44,7 @@ public class SSA {
     }
 
     // 根据定义块插入 phi
-    private void insertPhi(HashSet<BasicBlock> defBlocks, AllocaInstr baseInstr) {
+    private static void insertPhi(HashSet<BasicBlock> defBlocks, AllocaInstr baseInstr) {
         Stack<BasicBlock> defBlockStack = new Stack<>();
         HashSet<BasicBlock> insertedBlocks = new HashSet<>();
         for (BasicBlock defBlock : defBlocks) {
@@ -69,7 +66,7 @@ public class SSA {
         }
     }
 
-    private void dfsToRename(BasicBlock curBlock, HashMap<Value, Stack<Value>> varValueMap) {
+    private static void dfsToRename(BasicBlock curBlock, HashMap<Value, Stack<Value>> varValueMap) {
         if (curBlock.getName().equals("block_22")) {
             int m = 1;
         }
@@ -138,7 +135,7 @@ public class SSA {
         }
     }
 
-    private Value myStackPeek(Stack<Value> stack) {
+    private static Value myStackPeek(Stack<Value> stack) {
         if (stack.size() > 0) {
             return stack.peek();
         } else {

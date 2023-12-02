@@ -273,14 +273,16 @@ public class MipsBuilder {
                 procedure.addTextCmd(
                         new MemCmd(MemCmd.MemCmdOp.lw, valueRegMap.get(from), valueRegMap.get(from), 0)
                 );
-                valueRegMap.put(to, valueRegMap.get(from));
+                valueStackMap.put(to, stackOffset);
+                stackOffset -= 4;
             } else if (valueStackMap.containsKey(from)) {
                 procedure.addTextCmd(
                         new MemCmd(MemCmd.MemCmdOp.lw, Reg.$t8, Reg.$sp, valueStackMap.get(from))
                 );
                 procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.lw, Reg.$t8, Reg.$t8, 0));
                 procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$t8, Reg.$sp, valueStackMap.get(from)));
-                valueStackMap.put(to, valueStackMap.get(from));
+                valueStackMap.put(to, stackOffset);
+                stackOffset -= 4;
             }
         } else {
             if (valueRegMap.containsKey(from)) {

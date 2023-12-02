@@ -37,6 +37,12 @@ public class IcmpInstr extends Instr {
     }
 
     @Override
+    public String toGVNString() {
+        return instrType + " " + icmpType + " " + operands.get(0).getValueType()
+                + " " + operands.get(0).getName() + ", " + operands.get(1).getName();
+    }
+
+    @Override
     public String toString() {
         return name + " = " + instrType + " " + icmpType + " " + operands.get(0).getValueType()
                 + " " + operands.get(0).getName() + ", " + operands.get(1).getName();
