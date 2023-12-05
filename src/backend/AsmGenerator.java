@@ -12,6 +12,7 @@ public class AsmGenerator {
     }
 
     public MipsProcedure genMips(Module module) {
+        /* TODO 消除phi */
         // 新建 mips 程序
         MipsBuilder.getInstance().reFresh();
         // 中间代码转 mips

@@ -27,6 +27,10 @@ public class BasicBlock extends Value {
         instrList.add(instr);
     }
 
+    public void addInstrList(ArrayList<Instr> instructions) {
+        instrList.addAll(instructions);
+    }
+
     public ArrayList<Instr> getInstrList() {
         return instrList;
     }

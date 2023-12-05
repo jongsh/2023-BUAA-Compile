@@ -31,7 +31,7 @@ public class Value {
         this.userList.add(user);
     }
 
-    public void delete(User user) {
+    public void deleteUser(User user) {
         this.userList.remove(user);
     }
 
@@ -41,7 +41,7 @@ public class Value {
 
     public void modifyToNewValue(Value newValue) {
         for (User user : userList) {
-            user.modifyOperand(this, newValue);
+            user.modifyOperand(this, newValue, false);
         }
     }
 

@@ -14,6 +14,7 @@ public class SSA {
     private static Function function;
     private static CFG cfg;
 
+    // ---------------- 插入 phi 指令 转成 SSA 形式 -------------------- //
     public static void transToSSA(Function f, CFG c) {
         function = f;
         cfg = c;
@@ -67,9 +68,6 @@ public class SSA {
     }
 
     private static void dfsToRename(BasicBlock curBlock, HashMap<Value, Stack<Value>> varValueMap) {
-        if (curBlock.getName().equals("block_22")) {
-            int m = 1;
-        }
         // 遍历当前块的指令，更新 map 信息
         HashMap<Value, Integer> cntMap = new HashMap<>();
         ArrayList<Instr> instrList = curBlock.getInstrList();
@@ -91,7 +89,7 @@ public class SSA {
                     instrList.remove(i);
                     i--;
                 } else if (varValueMap.containsKey(fromValue)) {
-                    ((Instr) toValue).modifyOperand(fromValue, myStackPeek(varValueMap.get(fromValue)));
+                    ((Instr) toValue).modifyOperand(fromValue, myStackPeek(varValueMap.get(fromValue)), true);
                 }
             } else if (curInstr instanceof LoadInstr) {
                 Value loadFromValue = ((LoadInstr) curInstr).getTarget();
@@ -140,6 +138,101 @@ public class SSA {
             return stack.peek();
         } else {
             return IRBuilder.getInstance().newDigit(0);
+        }
+    }
+
+    // -------------- 消除 function 中的 phi 指令 ------------------------ //
+    public static void eliminatePhi(Function f, CFG c) {
+        function = f;
+        cfg = c;
+        phiToPc(function.getBasicBlockList().get(0));
+    }
+
+    // 初始化PC指令
+    private static void phiToPc(BasicBlock entry) {
+        HashMap<BasicBlock, BasicBlock> oldNewMap = new HashMap<>();
+        HashMap<BasicBlock, ArrayList<Instr>> records = new HashMap<>();
+
+        // 初始化 map
+        for (BasicBlock prevBlock : cfg.getCFGFatherList(entry)) {
+            if (cfg.getCFGChildrenList(prevBlock).size() > 1) {  // 关键边
+                BasicBlock newBlock = IRBuilder.getInstance().newBasicBlock();
+                oldNewMap.put(prevBlock, newBlock);
+                records.put(newBlock, new ArrayList<>());
+            } else {
+                oldNewMap.put(prevBlock, prevBlock);
+                records.put(prevBlock, new ArrayList<>());
+            }
+        }
+        // phi 转 pc
+        ArrayList<Instr> instrList = entry.getInstrList();
+        BasicBlock dtPre = cfg.getDTFather(entry);  // 支配树的父节点
+        for (int i = 0; i < instrList.size(); ++i) {
+            Instr instr = instrList.get(i);
+            if (instr instanceof PhiInstr) {
+                for (BasicBlock prevBlock : cfg.getCFGFatherList(entry)) {
+                    Value fromValue = ((PhiInstr) instr).getValueOfBlock(prevBlock);
+                    if (fromValue != null) {
+                        PCopyInstr pCopyInstr = IRBuilder.getInstance().newPCopyInstr(
+                                oldNewMap.get(prevBlock), fromValue, instr);
+                        records.get(oldNewMap.get(prevBlock)).add(pCopyInstr);
+                    }
+                }
+                dtPre.getInstrList().add(dtPre.getInstrList().size() - 1, instr); // 转移phi定义点
+                instrList.remove(i);
+                i--;
+            } else {
+                break;
+            }
+        }
+        // 插入 pc
+        for (BasicBlock prevBlock : cfg.getCFGFatherList(entry)) {
+            insertPc(prevBlock, oldNewMap.get(prevBlock), entry, records.get(oldNewMap.get(prevBlock)));
+        }
+        // dfs
+        for (BasicBlock dtNext : cfg.getDTChildrenList(entry)) {
+            phiToPc(dtNext);
+        }
+    }
+
+    private static void insertPc(BasicBlock pre, BasicBlock cur, BasicBlock next, ArrayList<Instr> instrList) {
+        if (instrList.size() == 0) {
+            return;
+        }
+        parallelizePc(instrList, cur);
+        if (pre.equals(cur)) {  // 不需要插入新的block
+            ArrayList<Instr> curInstrList = cur.getInstrList();
+            for (Instr instr : instrList) {
+                curInstrList.add(curInstrList.size() - 1, instr);
+            }
+        } else {
+            int index = function.getBasicBlockList().indexOf(pre);
+            cur.addInstrList(instrList);
+            // 修改 pre->next 成 pre->cur
+            pre.getInstrList().get(pre.getInstrList().size() - 1).modifyOperand(next, cur, true);
+            // 增加 cur->next
+            cur.addInstr(IRBuilder.getInstance().newBRInstr(next, cur));
+            function.getBasicBlockList().add(index + 1, cur);
+        }
+    }
+
+    // 并行化 pc
+    private static void parallelizePc(ArrayList<Instr> instrList, BasicBlock belong) {
+        for (int i = 0; i < instrList.size(); ++i) {
+            Value toValue = ((PCopyInstr) instrList.get(i)).getToValue();
+            PAllocaInstr pAllocaInstr = null;
+            for (int j = i + 1; j < instrList.size(); ++j) {
+                if (instrList.get(j) instanceof PCopyInstr && ((PCopyInstr) instrList.get(j)).getFromValue().equals(toValue)) {
+                    if (pAllocaInstr == null) {
+                        pAllocaInstr = IRBuilder.getInstance().newPAllocaInstr(belong, toValue);
+                    }
+                    ((PCopyInstr) instrList.get(j)).modifyFromValue(pAllocaInstr);
+                }
+            }
+            if (pAllocaInstr != null) {
+                instrList.add(i, pAllocaInstr);
+                i++;
+            }
         }
     }
 }

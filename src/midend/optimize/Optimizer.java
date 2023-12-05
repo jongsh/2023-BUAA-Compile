@@ -19,6 +19,8 @@ public class Optimizer {
             DeadCodeRemover.deleteDeadInstr(function);
             // GVN 优化
             GVN.simplify(function, cfg);
+            // 消除 Phi
+            SSA.eliminatePhi(function, cfg);
         }
 
     }

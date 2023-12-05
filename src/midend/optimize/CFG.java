@@ -50,6 +50,10 @@ public class CFG {
         return dtNextList.get(block);
     }
 
+    public BasicBlock getDTFather(BasicBlock block) {
+        return dtPrevList.get(block);
+    }
+
     // 生成流图和支配关系
     private void init() {
         ArrayList<BasicBlock> basicBlocks = function.getBasicBlockList();
@@ -136,7 +140,7 @@ public class CFG {
         findAliveBlock(total.get(0), aliveBlocks);
         for (int i = 0; i < total.size(); ++i) {
             if (!aliveBlocks.contains(total.get(i))) {
-                for (BasicBlock nextBlock: cfgNextList.get(total.get(i))) {
+                for (BasicBlock nextBlock : cfgNextList.get(total.get(i))) {
                     cfgPrevList.get(nextBlock).remove(total.get(i));
                 }
                 cfgNextList.remove(total.get(i));

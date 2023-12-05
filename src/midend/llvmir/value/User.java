@@ -21,16 +21,19 @@ public class User extends Value {
         return operands;
     }
 
-    public void modifyOperand(Value oldOperand, Value newOperand) {
+    public void modifyOperand(Value oldOperand, Value newOperand, boolean isUpdateOld) {
         int index = operands.indexOf(oldOperand);
         operands.set(index, newOperand);
         newOperand.addUser(this);
+        if (isUpdateOld) {
+            oldOperand.deleteUser(this);
+        }
     }
 
     public void deleted() {
         for (Value operand : operands) {
             if (operand != null) {
-                operand.delete(this);
+                operand.deleteUser(this);
             }
         }
     }

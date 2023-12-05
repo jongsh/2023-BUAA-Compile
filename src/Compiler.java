@@ -33,11 +33,11 @@ public class Compiler {
 
         // 中间代码生成
         Module module = semanticAnalyzer.genIR();
-        //outputToFile("llvm_ir.txt", module.toString());
+        outputToFile("llvm_ir.txt", module.toString());
 
         // 中间代码优化
         Optimizer.optimize(module);
-        outputToFile("llvm_ir.txt", module.toString());
+        outputToFile("llvm_ir_opt.txt", module.toString());
 
         // 目标代码生成
         //MipsProcedure procedure = AsmGenerator.getInstance().genMips(module);

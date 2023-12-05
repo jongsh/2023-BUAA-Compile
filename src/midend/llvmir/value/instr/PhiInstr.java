@@ -10,14 +10,17 @@ import java.util.ArrayList;
 public class PhiInstr extends Instr {
     private AllocaInstr baseInstr;
     private ArrayList<BasicBlock> fromBlocks;
+    private ArrayList<Boolean> records;
 
     public PhiInstr(String name, ValueType valueType, AllocaInstr baseInstr, ArrayList<BasicBlock> preBlocks,
                     BasicBlock belong) {
         super(name, valueType, InstrType.PHI, belong);
         this.baseInstr = baseInstr;
         this.fromBlocks = preBlocks;
-        for (int i = 0 ; i < preBlocks.size(); ++i) {
+        this.records = new ArrayList<>();
+        for (int i = 0; i < preBlocks.size(); ++i) {
             operands.add(IRBuilder.getInstance().newDigit(0));
+            records.add(Boolean.FALSE);
         }
     }
 
@@ -28,7 +31,16 @@ public class PhiInstr extends Instr {
     public void fillIn(BasicBlock fromBlock, Value fromValue) {
         int index = fromBlocks.indexOf(fromBlock);
         operands.set(index, fromValue);
+        records.set(index, Boolean.TRUE);
         fromValue.addUser(this);
+    }
+
+    public Value getValueOfBlock(BasicBlock fromBlock) {
+        int index = fromBlocks.indexOf(fromBlock);
+        if (index >= 0 && records.get(index)) {
+            return operands.get(index);
+        }
+        return null;
     }
 
     @Override

@@ -176,6 +176,10 @@ public class IRBuilder {
         return new BrInstr(obj, curBasicBlock);
     }
 
+    public BrInstr newBRInstr(BasicBlock obj, BasicBlock belong) {
+        return new BrInstr(obj, belong);
+    }
+
     public BrInstr newBRInstr(Value condValue, BasicBlock trueObj, BasicBlock falseObj) {
         return new BrInstr(condValue, trueObj, falseObj, curBasicBlock);
     }
@@ -207,8 +211,16 @@ public class IRBuilder {
     }
 
     public PhiInstr newPhiInstr(AllocaInstr baseInstr, BasicBlock block, ArrayList<BasicBlock> preBlocks) {
-        ValueType type = ((PointerType)baseInstr.getValueType()).getTargetType();
-        return new PhiInstr(LOCAL_VAR+(localVarCnt++), type, baseInstr, preBlocks, block);
+        ValueType type = ((PointerType) baseInstr.getValueType()).getTargetType();
+        return new PhiInstr(LOCAL_VAR + (localVarCnt++), type, baseInstr, preBlocks, block);
+    }
+
+    public PCopyInstr newPCopyInstr(BasicBlock belongBlock, Value from, Value to) {
+        return new PCopyInstr(from, to, belongBlock);
+    }
+
+    public PAllocaInstr newPAllocaInstr(BasicBlock belongBlock, Value from) {
+        return new PAllocaInstr(LOCAL_VAR + (localVarCnt++), from, belongBlock);
     }
 
     public void addInstr(Instr instr) {
