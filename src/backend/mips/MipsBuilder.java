@@ -57,16 +57,15 @@ public class MipsBuilder {
         ArrayList<Param> params = function.getParamList();
         ArrayList<BasicBlock> blockList = function.getBasicBlockList();
         ArrayList<Instr> instrList = new ArrayList<>();
-        for (BasicBlock block : blockList) {
-            instrList.addAll(block.getInstrList());
+        for (int i = 0; i < blockList.size(); ++i) {
+            instrList.addAll(blockList.get(i).getInstrList());
         }
 
-        int i;
-        for (i = 0; i < params.size() * 2; i += 2) {
-            valueStackMap.put(instrList.get(i), stackOffset);
+        for (int i = 0; i < params.size(); ++i) {
+            valueStackMap.put(params.get(i), stackOffset);
             stackOffset -= 4;
         }
-        for (; i < instrList.size(); ++i) {
+        for (int i = 0; i < instrList.size(); ++i) {
             if (instrList.get(i) instanceof IcmpInstr || instrList.get(i).getName().equals("")
                     || instrList.get(i) instanceof LoadInstr ||
                     valueRegMap.containsKey(instrList.get(i)) || valueStackMap.containsKey(instrList.get(i))) {
@@ -269,20 +268,19 @@ public class MipsBuilder {
 
     public void loadInstrToCmd(Value from, Value to) {
         if (from instanceof GepInstr) {
+            valueStackMap.put(to, stackOffset);
+            stackOffset -= 4;
             if (valueRegMap.containsKey(from)) {
                 procedure.addTextCmd(
-                        new MemCmd(MemCmd.MemCmdOp.lw, valueRegMap.get(from), valueRegMap.get(from), 0)
+                        new MemCmd(MemCmd.MemCmdOp.lw, Reg.$t8, valueRegMap.get(from), 0)
                 );
-                valueStackMap.put(to, stackOffset);
-                stackOffset -= 4;
+                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$t8, Reg.$sp, valueStackMap.get(to)));
             } else if (valueStackMap.containsKey(from)) {
                 procedure.addTextCmd(
                         new MemCmd(MemCmd.MemCmdOp.lw, Reg.$t8, Reg.$sp, valueStackMap.get(from))
                 );
                 procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.lw, Reg.$t8, Reg.$t8, 0));
-                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$t8, Reg.$sp, valueStackMap.get(from)));
-                valueStackMap.put(to, stackOffset);
-                stackOffset -= 4;
+                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$t8, Reg.$sp, valueStackMap.get(to)));
             }
         } else {
             if (valueRegMap.containsKey(from)) {
@@ -291,6 +289,7 @@ public class MipsBuilder {
                 valueStackMap.put(to, valueStackMap.get(from));
             }
         }
+
     }
 
     public void gepInstrToCmd(Value targetValue, Value basicValue, int basicLength,

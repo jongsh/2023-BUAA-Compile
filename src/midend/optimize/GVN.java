@@ -16,13 +16,18 @@ public class GVN {
     private static Function function;
     private static CFG cfg;
     private static HashMap<String, Value> valueMap;
+    private static boolean isContinue;
 
     public static void simplify(Function f, CFG c) {
         function = f;
         cfg = c;
         valueMap = new HashMap<>();
         BasicBlock entry = function.getBasicBlockList().get(0);
-        simplifyDFS(entry);
+        do {
+            isContinue = false;
+            simplifyDFS(entry);
+        }
+        while (isContinue);
     }
 
     private static void simplifyDFS(BasicBlock entry) {
@@ -48,5 +53,9 @@ public class GVN {
         for (String gvnString : records) {
             valueMap.remove(gvnString);
         }
+    }
+
+    private static void constantFold() {
+
     }
 }

@@ -54,7 +54,9 @@ public class MulExp extends Node {
             } else if (tempValue instanceof Digit && ((Digit) tempValue).getNum() == 0) {
                 retValue = tempValue;
             } else if (tempValue instanceof Digit && ((Digit) tempValue).getNum() == 1) {
-                continue;
+                if (aluType.equals("%")) {
+                    retValue = IRBuilder.getInstance().newDigit(0);
+                }
             } else if (tempValue instanceof Digit && ((Digit) tempValue).getNum() == 2 && aluType.equals("*")) {
                 aluInstr = IRBuilder.getInstance().newAluInstr("+");
                 aluInstr.addOperands(retValue, retValue);

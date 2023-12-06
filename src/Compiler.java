@@ -40,8 +40,8 @@ public class Compiler {
         outputToFile("llvm_ir_opt.txt", module.toString());
 
         // 目标代码生成
-        //MipsProcedure procedure = AsmGenerator.getInstance().genMips(module);
-        //outputToFile(outputFileName, procedure.toString());
+        MipsProcedure procedure = AsmGenerator.getInstance().genMips(module);
+        outputToFile(outputFileName, procedure.toString());
     }
 
     private static String inputFromFile(String inputPath) {
