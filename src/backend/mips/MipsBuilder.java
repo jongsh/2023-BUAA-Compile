@@ -409,8 +409,8 @@ public class MipsBuilder {
         Reg targetReg = valueRegMap.getOrDefault(targetValue, Reg.$t8);
         switch (op) {
             case "*":
-                addMulCmd(sourceValue1, sourceValue2);
-                break;
+                addMulCmd(sourceValue1, sourceValue2, targetValue);
+                return;
             case "/":
             case "%":
                 addDivCmd(sourceValue1, sourceValue2);
@@ -422,19 +422,11 @@ public class MipsBuilder {
                 }
                 return;
             case "+":
-                addPlusCmd(sourceValue1, sourceValue2);
-                break;
+                addPlusCmd(sourceValue1, sourceValue2, targetValue);
+                return;
             case "-":
-                addSubCmd(sourceValue1, sourceValue2);
-                break;
-            default:
-                break;
-        }
-
-        if (targetReg.equals(Reg.$t8)) {
-            procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$v1, Reg.$sp, valueStackMap.get(targetValue)));
-        } else {
-            procedure.addTextCmd(new MoveCmd(targetReg, Reg.$v1));
+                addSubCmd(sourceValue1, sourceValue2, targetValue);
+                return;
         }
     }
 
@@ -448,12 +440,17 @@ public class MipsBuilder {
         }
     }
 
-    private void addMulCmd(Value sourceValue1, Value sourceValue2) {
-        Reg targetReg = Reg.$v1;
+    private void addMulCmd(Value sourceValue1, Value sourceValue2, Value targetValue) {
+        Reg targetReg = valueRegMap.getOrDefault(targetValue, Reg.$t8);
         Reg sourceReg1 = takeRegOfValue(sourceValue1, Reg.$t8, true);
         Reg sourceReg2 = takeRegOfValue(sourceValue2, Reg.$t9, true);
 
-        procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, targetReg, sourceReg1, sourceReg2));
+        if (targetReg.equals(Reg.$t8)) {
+            procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, Reg.$v1, sourceReg1, sourceReg2));
+            procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$v1, Reg.$sp, valueStackMap.get(targetValue)));
+        } else {
+            procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, targetReg, sourceReg1, sourceReg2));
+        }
     }
 
     private void addDivCmd(Value sourceValue1, Value sourceValue2) {
@@ -462,8 +459,8 @@ public class MipsBuilder {
         procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.div, null, sourceReg1, sourceReg2));
     }
 
-    private void addPlusCmd(Value sourceValue1, Value sourceValue2) {
-        Reg targetReg = Reg.$v1;   // 计算指令结果全放在临时寄存器中
+    private void addPlusCmd(Value sourceValue1, Value sourceValue2, Value targetValue) {
+        Reg targetReg = valueRegMap.getOrDefault(targetValue, Reg.$v1);
         Reg sourceReg1 = takeRegOfValue(sourceValue1, Reg.$t8, true);
         Reg sourceReg2 = takeRegOfValue(sourceValue2, Reg.$t9, false);
         Integer immediate = null;
@@ -476,10 +473,14 @@ public class MipsBuilder {
         } else {
             procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addu, targetReg, sourceReg1, sourceReg2));
         }
+
+        if (targetReg.equals(Reg.$v1)) {
+            procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$v1, Reg.$sp, valueStackMap.get(targetValue)));
+        }
     }
 
-    private void addSubCmd(Value sourceValue1, Value sourceValue2) {
-        Reg targetReg = Reg.$v1;   // 计算指令结果全放在临时寄存器中
+    private void addSubCmd(Value sourceValue1, Value sourceValue2, Value targetValue) {
+        Reg targetReg = valueRegMap.getOrDefault(targetValue, Reg.$v1);
         Reg sourceReg1 = takeRegOfValue(sourceValue1, Reg.$t8, true);
         Reg sourceReg2 = takeRegOfValue(sourceValue2, Reg.$t9, false);
         Integer immediate = null;
@@ -490,6 +491,10 @@ public class MipsBuilder {
             procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addiu, targetReg, (sourceReg1 != null) ? sourceReg1 : sourceReg2, -1 * immediate));
         } else {
             procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.subu, targetReg, sourceReg1, sourceReg2));
+        }
+
+        if (targetReg.equals(Reg.$v1)) {
+            procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$v1, Reg.$sp, valueStackMap.get(targetValue)));
         }
     }
 

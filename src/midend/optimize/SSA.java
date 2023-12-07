@@ -74,6 +74,7 @@ public class SSA {
         for (int i = 0; i < instrList.size(); ++i) {
             Instr curInstr = instrList.get(i);
             if (curInstr instanceof AllocaInstr && varValueMap.containsKey(curInstr)) {
+                curInstr.deleted();
                 instrList.remove(i);
                 i--;
             } else if (curInstr instanceof StoreInstr) {
@@ -86,6 +87,7 @@ public class SSA {
                         varValueMap.get(toValue).push(fromValue);
                     }
                     cntMap.put(toValue, cntMap.containsKey(toValue) ? cntMap.get(toValue) + 1 : 1);
+                    curInstr.deleted();
                     instrList.remove(i);
                     i--;
                 } else if (varValueMap.containsKey(fromValue)) {
@@ -95,6 +97,7 @@ public class SSA {
                 Value loadFromValue = ((LoadInstr) curInstr).getTarget();
                 if (varValueMap.containsKey(loadFromValue)) {
                     curInstr.modifyToNewValue(myStackPeek(varValueMap.get(loadFromValue)));
+                    curInstr.deleted();
                     instrList.remove(i);
                     i--;
                 }

@@ -43,6 +43,7 @@ public class Value {
         for (User user : userList) {
             user.modifyOperand(this, newValue, false);
         }
+        userList.clear();
     }
 
     public int size() {

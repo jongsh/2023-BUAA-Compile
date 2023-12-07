@@ -16,21 +16,18 @@ public class GVN {
     private static Function function;
     private static CFG cfg;
     private static HashMap<String, Value> valueMap;
-    private static boolean isContinue;
 
     public static void simplify(Function f, CFG c) {
         function = f;
         cfg = c;
         valueMap = new HashMap<>();
         BasicBlock entry = function.getBasicBlockList().get(0);
-        do {
-            isContinue = false;
-            simplifyDFS(entry);
-        }
-        while (isContinue);
+        simplifyDFS(entry);
+
     }
 
     private static void simplifyDFS(BasicBlock entry) {
+        constantFold(entry);
         HashSet<String> records = new HashSet<>();
         ArrayList<Instr> instrList = entry.getInstrList();
         for (int i = 0; i < instrList.size(); ++i) {
@@ -39,6 +36,7 @@ public class GVN {
                 continue;
             } else if (valueMap.containsKey(instr.toGVNString())) {
                 instr.modifyToNewValue(valueMap.get(instr.toGVNString()));
+                instrList.get(i).deleted();
                 instrList.remove(i);
                 i--;
             } else {
@@ -55,7 +53,12 @@ public class GVN {
         }
     }
 
-    private static void constantFold() {
-
+    private static void constantFold(BasicBlock entry) {
+        ArrayList<Instr> instrList = entry.getInstrList();
+        for (Instr instr : instrList) {
+            if (instr instanceof AluInstr) {
+                ((AluInstr) instr).simplify();
+            }
+        }
     }
 }

@@ -10,15 +10,15 @@ public class Optimizer {
 
     public static void optimize(Module module) {
         cfgMaps = new HashMap<>();
-        for (Function function: module.getFunctionList()) {
+        for (Function function : module.getFunctionList()) {
             CFG cfg = new CFG(function);
             cfgMaps.put(function, cfg);
             // 转换成 SSA 形式
             SSA.transToSSA(function, cfg);
-            // 死代码删除
-            DeadCodeRemover.deleteDeadInstr(function);
             // GVN 优化
             GVN.simplify(function, cfg);
+            // 死代码删除
+            DeadCodeRemover.deleteDeadInstr(function);
             // 消除 Phi
             SSA.eliminatePhi(function, cfg);
         }
