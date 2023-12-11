@@ -60,7 +60,7 @@ public class Function extends User {
     public void toMips() {
         MipsBuilder.getInstance().addNoteCmd("\n# function: " + name);
         MipsBuilder.getInstance().addLabelCmd(name.substring(1));
-        MipsBuilder.getInstance().allocaRegs(this);
+        MipsBuilder.getInstance().entryFunc(this);
         int i = (paramList.size() == 0) ? 0 : 1;
         for (; i < basicBlockList.size(); ++i) {
             basicBlockList.get(i).toMips();

@@ -4,11 +4,13 @@ import backend.mips.mipscmd.*;
 import midend.llvmir.type.ArrayType;
 import midend.llvmir.type.PointerType;
 import midend.llvmir.value.*;
+import midend.llvmir.value.Module;
 import midend.llvmir.value.instr.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class MipsBuilder {
     private static MipsBuilder instance = new MipsBuilder();
@@ -16,7 +18,8 @@ public class MipsBuilder {
     private HashMap<Value, Reg> valueRegMap;        // value -- reg
     private HashMap<Value, Integer> valueStackMap;  // value -- stack
     private int stackOffset;  // 当前栈偏移($sp)
-    private HashMap<String, LabelCmd> labelList;
+    //private HashMap<String, LabelCmd> labelList;
+    private RegAllocator regAllocator;
     private ArrayList<Reg> spareRegs = new ArrayList<>(Arrays.asList(
             Reg.$t0, Reg.$t1, Reg.$t2, Reg.$t3, Reg.$t4, Reg.$t5, Reg.$t6, Reg.$t7,
             Reg.$s0, Reg.$s1, Reg.$s2, Reg.$s3, Reg.$s4, Reg.$s5, Reg.$s6, Reg.$s7
@@ -34,8 +37,9 @@ public class MipsBuilder {
         this.procedure = new MipsProcedure();
         this.valueRegMap = new HashMap<>();
         this.valueStackMap = new HashMap<>();
-        this.labelList = new HashMap<>();
+        //this.labelList = new HashMap<>();
         this.stackOffset = 0;
+        this.regAllocator = new RegAllocator();
     }
 
     public MipsProcedure getProcedure() {
@@ -43,48 +47,56 @@ public class MipsBuilder {
     }
 
     // 分配寄存器
-    public void allocaRegs(Function function) {
-        this.valueRegMap = new HashMap<>();
-        this.valueStackMap = new HashMap<>();
-        this.stackOffset = 0;
-
-        spareRegs = new ArrayList<>(Arrays.asList(
-                Reg.$a1, Reg.$a2, Reg.$a3,
-                Reg.$t0, Reg.$t1, Reg.$t2, Reg.$t3, Reg.$t4, Reg.$t5, Reg.$t6, Reg.$t7,
-                Reg.$s0, Reg.$s1, Reg.$s2, Reg.$s3, Reg.$s4, Reg.$s5, Reg.$s6, Reg.$s7
-        ));
-
-        ArrayList<Param> params = function.getParamList();
-        ArrayList<BasicBlock> blockList = function.getBasicBlockList();
-        ArrayList<Instr> instrList = new ArrayList<>();
-        for (int i = 0; i < blockList.size(); ++i) {
-            instrList.addAll(blockList.get(i).getInstrList());
-        }
-
-        for (int i = 0; i < params.size(); ++i) {
-            valueStackMap.put(params.get(i), stackOffset);
-            stackOffset -= 4;
-        }
-        for (int i = 0; i < instrList.size(); ++i) {
-            if (instrList.get(i) instanceof IcmpInstr || instrList.get(i).getName().equals("")
-                    || instrList.get(i) instanceof LoadInstr ||
-                    valueRegMap.containsKey(instrList.get(i)) || valueStackMap.containsKey(instrList.get(i))) {
-                continue;
-            }
-            if (instrList.get(i) instanceof AllocaInstr &&
-                    ((PointerType) instrList.get(i).getValueType()).getTargetType() instanceof ArrayType) {
-                continue;
-            }
-
-            if (spareRegs.size() > 0) {
-                valueRegMap.put(instrList.get(i), spareRegs.get(spareRegs.size() - 1));
-                spareRegs.remove(spareRegs.size() - 1);
-            } else {
-                valueStackMap.put(instrList.get(i), stackOffset);
-                stackOffset -= 4 * instrList.get(i).size();
-            }
-        }
+    public void allocaRegs(Module module) {
+        regAllocator.alloca(module);
     }
+
+    public void entryFunc(Function function) {
+        String funcName = function.getName();
+        this.valueRegMap = regAllocator.getFuncRegMap(funcName);
+        this.valueStackMap = regAllocator.getFuncStackMap(funcName);
+        this.stackOffset = regAllocator.getFuncStack(funcName);
+    }
+//    public void entryFunc(Function function) {
+//        this.valueRegMap = new HashMap<>();
+//        this.valueStackMap = new HashMap<>();
+//        this.stackOffset = 0;
+//
+//        spareRegs = new ArrayList<>(Arrays.asList(
+//                Reg.$a1, Reg.$a2, Reg.$a3,
+//                Reg.$t0, Reg.$t1, Reg.$t2, Reg.$t3, Reg.$t4, Reg.$t5, Reg.$t6, Reg.$t7,
+//                Reg.$s0, Reg.$s1, Reg.$s2, Reg.$s3, Reg.$s4, Reg.$s5, Reg.$s6, Reg.$s7
+//        ));
+//
+//        ArrayList<Param> params = function.getParamList();
+//        ArrayList<BasicBlock> blockList = function.getBasicBlockList();
+//        ArrayList<Instr> instrList = new ArrayList<>();
+//        for (BasicBlock block : blockList) {
+//            instrList.addAll(block.getInstrList());
+//        }
+//        for (Param param : params) {
+//            valueStackMap.put(param, stackOffset);
+//            stackOffset -= 4;
+//        }
+//        for (Instr instr : instrList) {
+//            if (instr instanceof IcmpInstr || instr.getName().equals("")
+//                    || valueRegMap.containsKey(instr) || valueStackMap.containsKey(instr)) {
+//                continue;
+//            }
+//            if (instr instanceof AllocaInstr &&
+//                    ((PointerType) instr.getValueType()).getTargetType() instanceof ArrayType) {
+//                continue;
+//            }
+//
+//            if (spareRegs.size() > 0) {
+//                valueRegMap.put(instr, spareRegs.get(spareRegs.size() - 1));
+//                spareRegs.remove(spareRegs.size() - 1);
+//            } else {
+//                valueStackMap.put(instr, stackOffset);
+//                stackOffset -= 4 * instr.size();
+//            }
+//        }
+//    }
 
     // ----------------- 指令相关 --------------------- //
     private Reg takeRegOfValue(Value value, Reg backup, boolean handleDigit) {
@@ -122,8 +134,7 @@ public class MipsBuilder {
             procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.lw, backup, Reg.$sp, valueStackMap.get(value)));
             retReg = backup;
         } else {
-            String addrName = (value instanceof LoadInstr) ?
-                    ((LoadInstr) value).getTarget().getName() : value.getName();
+            String addrName = value.getName();
             procedure.addTextCmd(new LaCmd(backup, addrName.substring(1)));
             retReg = backup;
         }
@@ -139,29 +150,15 @@ public class MipsBuilder {
     }
 
     public LabelCmd getLabelCmd(String name) {
-        if (labelList.containsKey(name)) {
-            return labelList.get(name);
-        } else {
-            LabelCmd newLabel = new LabelCmd(name);
-            labelList.put(name, newLabel);
-            return newLabel;
-        }
+        return new LabelCmd(name);
     }
 
     public void allocaInstrToCmd(Value target, int size) {
         stackOffset -= size * 4;
-        if (spareRegs.size() > 0) {
-            valueRegMap.put(target, spareRegs.get(spareRegs.size() - 1));
-            procedure.addTextCmd(new AluCmd(
-                    AluCmd.AluCmdOp.addiu, spareRegs.get(spareRegs.size() - 1), Reg.$sp, stackOffset + 4));
-            spareRegs.remove(spareRegs.size() - 1);
-        } else {
-            valueStackMap.put(target, stackOffset);
-            procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addiu, Reg.$v1, Reg.$sp, stackOffset + 4));
-            procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$v1, Reg.$sp, stackOffset));
-            stackOffset -= 4;
-
-        }
+        valueStackMap.put(target, stackOffset);
+        procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addiu, Reg.$v1, Reg.$sp, stackOffset + 4));
+        procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$v1, Reg.$sp, stackOffset));
+        stackOffset -= 4;
     }
 
     public void callInstrToCmd(Value targetValue, String funcName, ArrayList<Value> arguments) {
@@ -189,25 +186,79 @@ public class MipsBuilder {
                 procedure.addTextCmd(new SyscallCmd());
                 break;
             default:
-                // 存寄存器: valueRegMap + ra
-                HashMap<Reg, Integer> storedRegs = new HashMap<>();
-                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$ra, Reg.$sp, stackOffset));
-                storedRegs.put(Reg.$ra, stackOffset);
-                stackOffset -= 4;
-                ArrayList<Reg> regList = new ArrayList<>(valueRegMap.values());
-                for (Reg reg : regList) {
-                    if (!reg.equals(Reg.$v0) && !reg.equals(Reg.$v1) && !storedRegs.containsKey(reg)) {
-                        procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, reg, Reg.$sp, stackOffset));
-                        storedRegs.put(reg, stackOffset);
-                        stackOffset -= 4;
-                    }
+                // 存寄存器: usedRegsMap + ra
+                HashSet<Reg> usedRegsSet = regAllocator.getFuncUsedRegs("@" + funcName);
+                usedRegsSet.add(Reg.$ra);
+                HashMap<Reg, Integer> storeLocation = new HashMap<>();
+                for (Reg reg : usedRegsSet) {
+                    procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, reg, Reg.$sp, stackOffset));
+                    storeLocation.put(reg, stackOffset);
+                    stackOffset -= 4;
                 }
+//                HashMap<Reg, Integer> storedRegs = new HashMap<>();
+//                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$ra, Reg.$sp, stackOffset));
+//                storedRegs.put(Reg.$ra, stackOffset);
+//                stackOffset -= 4;
+//                ArrayList<Reg> regList = new ArrayList<>(valueRegMap.values());
+//                for (Reg reg : regList) {
+//                    if (!reg.equals(Reg.$v0) && !reg.equals(Reg.$v1) && !storedRegs.containsKey(reg)) {
+//                        procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, reg, Reg.$sp, stackOffset));
+//                        storedRegs.put(reg, stackOffset);
+//                        stackOffset -= 4;
+//                    }
+//                }
                 // 函数传参
                 int tempStackOffset = stackOffset;
-                for (Value argument : arguments) {
-                    Reg tempReg = takeRegOfValue(argument, Reg.$t8, true);
-                    procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, tempReg, Reg.$sp, tempStackOffset));
-                    tempStackOffset -= 4;
+                ArrayList<Reg> paramRegList = regAllocator.getFuncParamRegList("@" + funcName);
+
+                ArrayList<Reg> replaceRegList = new ArrayList<>(Arrays.asList(Reg.$t8, Reg.$t9, Reg.$v1));
+                HashSet<Reg> toARegSet = new HashSet<>();
+                HashMap<Reg, Reg> fromARegMap = new HashMap<>();
+                for (int i = 0; i < arguments.size(); ++i) {
+                    if (paramRegList.get(i) != null) {
+                        toARegSet.add(paramRegList.get(i));  // 记录目标的寄存器
+                    }
+                    fromARegMap.put(valueRegMap.getOrDefault(arguments.get(i), null), null);
+                }
+                int replaceIndex = 0;
+                for (Reg fromAReg : fromARegMap.keySet()) {
+                    if (toARegSet.contains(fromAReg)) {
+                        procedure.addTextCmd(new MoveCmd(replaceRegList.get(replaceIndex), fromAReg));
+                        fromARegMap.put(fromAReg, replaceRegList.get(replaceIndex));
+                        replaceIndex++;
+                    }
+                }
+                for (int i = 0; i < arguments.size(); ++i) {
+                    if (paramRegList.get(i) != null) {
+                        Reg tempReg;
+                        if (arguments.get(i) instanceof Digit) {
+                            procedure.addTextCmd(
+                                    new AluCmd(AluCmd.AluCmdOp.addiu, paramRegList.get(i), Reg.$zero, ((Digit) arguments.get(i)).getNum())
+                            );
+                        } else if (valueRegMap.containsKey(arguments.get(i))) {
+                            tempReg = valueRegMap.get(arguments.get(i));
+                            if (fromARegMap.getOrDefault(tempReg, null) != null) {
+                                procedure.addTextCmd(new MoveCmd(paramRegList.get(i), fromARegMap.get(tempReg)));
+                            } else {
+                                procedure.addTextCmd(new MoveCmd(paramRegList.get(i), tempReg));
+                            }
+                        } else if (valueStackMap.containsKey(arguments.get(i))) {
+                            procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.lw, paramRegList.get(i), Reg.$sp,
+                                    valueStackMap.get(arguments.get(i))));
+                        } else {
+                            String addrName = arguments.get(i).getName();
+                            procedure.addTextCmd(new LaCmd(paramRegList.get(i), addrName.substring(1)));
+                            procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.lw, paramRegList.get(i), paramRegList.get(i), 0));
+                        }
+                    } else {
+                        Reg tempReg = takeRegOfValue(arguments.get(i), Reg.$t8, true);
+                        if (fromARegMap.getOrDefault(tempReg, null) != null) {
+                            procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, fromARegMap.get(tempReg), Reg.$sp, tempStackOffset));
+                        } else {
+                            procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, tempReg, Reg.$sp, tempStackOffset));
+                        }
+                        tempStackOffset -= 4;
+                    }
                 }
                 // 更改 sp
                 procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addiu, Reg.$sp, Reg.$sp, stackOffset));
@@ -219,11 +270,12 @@ public class MipsBuilder {
                 // 更改 sp
                 procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addiu, Reg.$sp, Reg.$sp, -1 * stackOffset));
                 // 恢复寄存器现场
-                for (Reg reg : storedRegs.keySet()) {
-                    procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.lw, reg, Reg.$sp, storedRegs.get(reg)));
+                for (Reg reg : storeLocation.keySet()) {
+                    procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.lw, reg, Reg.$sp, storeLocation.get(reg)));
                 }
                 break;
         }
+
         // 存储函数返回值
         if (valueRegMap.containsKey(targetValue)) {
             procedure.addTextCmd(new MoveCmd(valueRegMap.get(targetValue), Reg.$v0));
@@ -267,28 +319,39 @@ public class MipsBuilder {
     }
 
     public void loadInstrToCmd(Value from, Value to) {
-        if (from instanceof GepInstr) {
-            valueStackMap.put(to, stackOffset);
-            stackOffset -= 4;
-            if (valueRegMap.containsKey(from)) {
+        Reg toReg = valueRegMap.getOrDefault(to, Reg.$t9);
+        if (valueRegMap.containsKey(from)) {
+            if (toReg.equals(Reg.$t9)) {
                 procedure.addTextCmd(
                         new MemCmd(MemCmd.MemCmdOp.lw, Reg.$t8, valueRegMap.get(from), 0)
                 );
                 procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$t8, Reg.$sp, valueStackMap.get(to)));
-            } else if (valueStackMap.containsKey(from)) {
+            } else {
                 procedure.addTextCmd(
-                        new MemCmd(MemCmd.MemCmdOp.lw, Reg.$t8, Reg.$sp, valueStackMap.get(from))
+                        new MemCmd(MemCmd.MemCmdOp.lw, toReg, valueRegMap.get(from), 0)
                 );
+            }
+        } else if (valueStackMap.containsKey(from)) {
+            procedure.addTextCmd(
+                    new MemCmd(MemCmd.MemCmdOp.lw, Reg.$t8, Reg.$sp, valueStackMap.get(from))
+            );
+            if (toReg.equals(Reg.$t9)) {
                 procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.lw, Reg.$t8, Reg.$t8, 0));
                 procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$t8, Reg.$sp, valueStackMap.get(to)));
+            } else {
+                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.lw, toReg, Reg.$t8, 0));
             }
         } else {
-            if (valueRegMap.containsKey(from)) {
-                valueRegMap.put(to, valueRegMap.get(from));
-            } else if (valueStackMap.containsKey(from)) {
-                valueStackMap.put(to, valueStackMap.get(from));
+            String addrName = ((LoadInstr) to).getTarget().getName();
+            procedure.addTextCmd(new LaCmd(Reg.$t8, addrName.substring(1)));
+            if (toReg.equals(Reg.$t9)) {
+                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.lw, Reg.$t8, Reg.$t8, 0));
+                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$t8, Reg.$sp, valueStackMap.get(to)));
+            } else {
+                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.lw, toReg, Reg.$t8, 0));
             }
         }
+
 
     }
 
@@ -301,6 +364,10 @@ public class MipsBuilder {
         procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addiu, Reg.$v1, Reg.$zero, 0));
         for (int i = 0; i < operands.size(); ++i) {
             if (operands.get(i) instanceof Digit && ((Digit) operands.get(i)).getNum() == 0) {
+                continue;
+            } else if (operands.get(i) instanceof Digit) {
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addu, Reg.$v1, Reg.$v1,
+                        dimensions.get(i) * ((Digit) operands.get(i)).getNum()));
                 continue;
             }
             Reg reg1 = takeRegOfValue(operands.get(i), Reg.$t8, true);

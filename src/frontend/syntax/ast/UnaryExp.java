@@ -66,6 +66,7 @@ public class UnaryExp extends Node {
 
             Function function = IRBuilder.getInstance().newFunction(funcSymbol.getType(), funcName);
             CallInstr callInstr = IRBuilder.getInstance().newCallInstr(function);
+
             if (children.size() > 2 && children.get(2).getType().equals(SyntaxType.FuncRParams)) {
                 SymbolManager.instance().createTable(SymbolTable.TableType.FUNC, false, funcName);
                 ArrayList<Value> operands = ((FuncRParams) children.get(2)).genIRs();

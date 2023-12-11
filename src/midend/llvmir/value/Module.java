@@ -54,6 +54,7 @@ public class Module extends Value {
 
     @Override
     public void toMips() {
+        MipsBuilder.getInstance().allocaRegs(this);   // 首先分配寄存器
         for (GlobalVar globalVar : globalVarList) {
             globalVar.toMips();
         }

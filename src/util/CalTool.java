@@ -1,8 +1,10 @@
 package util;
 
 import midend.llvmir.value.BasicBlock;
+import midend.llvmir.value.Value;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class CalTool {
 
@@ -44,5 +46,19 @@ public class CalTool {
             temp.add(ele);
         }
         return temp;
+    }
+
+    // set = set1 ∪ set2
+    public static HashSet<Value> add(HashSet<Value> set1, HashSet<Value> set2) {
+        HashSet<Value> ret = new HashSet<>(set1);
+        ret.addAll(set2);
+        return ret;
+    }
+
+    // set = set - ele
+    public static HashSet<Value> sub(HashSet<Value> set, Value ele) {
+        HashSet<Value> ret = new HashSet<>(set);
+        ret.remove(ele);
+        return ret;
     }
 }

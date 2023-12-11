@@ -13,6 +13,10 @@ public class MoveCmd implements TextCmd {
 
     @Override
     public String toString() {
-        return "move " + targetReg + " " + sourceReg;
+        if (targetReg.equals(sourceReg)) {
+            return "";
+        } else {
+            return "move " + targetReg + " " + sourceReg;
+        }
     }
 }
