@@ -22,6 +22,7 @@ public class RegAllocator {
         private final HashMap<Value, Integer> valueStackMap;  // value -- stack
         private int stackOffset;  // 当前栈偏移($sp)
         private final ArrayList<Reg> spareRegs;
+        private final HashSet<Reg> spareRegsRec;
 
         public AllocaRecord() {
             this.stackOffset = 0;
@@ -32,6 +33,7 @@ public class RegAllocator {
                     Reg.$t0, Reg.$t1, Reg.$t2, Reg.$t3, Reg.$t4, Reg.$t5, Reg.$t6, Reg.$t7,
                     Reg.$s0, Reg.$s1, Reg.$s2, Reg.$s3, Reg.$s4, Reg.$s5, Reg.$s6, Reg.$s7,
                     Reg.$a3, Reg.$a2, Reg.$a1));
+            this.spareRegsRec = new HashSet<>(spareRegs);
         }
 
         public void addValue(Value value) {
@@ -65,12 +67,18 @@ public class RegAllocator {
         }
 
         public Reg release(Value value) {
-            if (valueRegMap.containsKey(value) && spareRegs.contains(valueRegMap.get(value))) {
-                spareRegs.add(valueRegMap.get(value));
+            if (valueRegMap.containsKey(value)) {
+                if (!spareRegs.contains(valueRegMap.get(value))) {
+                    spareRegs.add(valueRegMap.get(value));
+                }
                 return valueRegMap.get(value);
             } else {
                 return null;
             }
+        }
+
+        public void maintain() {
+
         }
 
         public ArrayList<Reg> getParamRegList() {
@@ -120,8 +128,6 @@ public class RegAllocator {
                     dataStreamAnalyse(blockList.get(i));
                 }
             }
-
-
             // 分配寄存器
             allocaRegs(function);
         }
