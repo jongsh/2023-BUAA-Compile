@@ -6,6 +6,7 @@ import midend.llvmir.type.PointerType;
 import midend.llvmir.value.*;
 import midend.llvmir.value.Module;
 import midend.llvmir.value.instr.*;
+import util.CalTool;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -376,8 +377,12 @@ public class MipsBuilder {
             procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addu, Reg.$v1, Reg.$v1, Reg.$t9));
         }
         if (basicLength > 1) {
-            procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addiu, Reg.$t8, Reg.$zero, basicLength));
-            procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, Reg.$v1, Reg.$v1, Reg.$t8));
+            if (CalTool.getPowerOfTwo(basicLength) != -1) {
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.sll, Reg.$v1, Reg.$v1, CalTool.getPowerOfTwo(basicLength)));
+            } else {
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addiu, Reg.$t8, Reg.$zero, basicLength));
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, Reg.$v1, Reg.$v1, Reg.$t8));
+            }
         }
         // 计算地址
         Reg addrReg = takeAddrOfValue(basicValue, Reg.$t8);
@@ -480,6 +485,7 @@ public class MipsBuilder {
                 return;
             case "/":
             case "%":
+
                 addDivCmd(sourceValue1, sourceValue2);
                 procedure.addTextCmd(
                         new MfCmd((op.equals("/")) ? MfCmd.MfCmdOp.mflo : MfCmd.MfCmdOp.mfhi, targetReg)
@@ -509,15 +515,34 @@ public class MipsBuilder {
 
     private void addMulCmd(Value sourceValue1, Value sourceValue2, Value targetValue) {
         Reg targetReg = valueRegMap.getOrDefault(targetValue, Reg.$t8);
-        Reg sourceReg1 = takeRegOfValue(sourceValue1, Reg.$t8, true);
-        Reg sourceReg2 = takeRegOfValue(sourceValue2, Reg.$t9, true);
+        if (sourceValue1 instanceof Digit && CalTool.getPowerOfTwo(((Digit) sourceValue1).getNum()) != -1) {
+            Reg sourceReg2 = takeRegOfValue(sourceValue2, Reg.$t9, true);
+            if (targetReg.equals(Reg.$t8)) {
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, Reg.$v1, sourceReg2, CalTool.getPowerOfTwo(((Digit) sourceValue1).getNum())));
+                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$v1, Reg.$sp, valueStackMap.get(targetValue)));
+            } else {
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, targetReg, sourceReg2, CalTool.getPowerOfTwo(((Digit) sourceValue1).getNum())));
+            }
 
-        if (targetReg.equals(Reg.$t8)) {
-            procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, Reg.$v1, sourceReg1, sourceReg2));
-            procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$v1, Reg.$sp, valueStackMap.get(targetValue)));
+        } else if (sourceValue2 instanceof Digit && CalTool.getPowerOfTwo(((Digit) sourceValue2).getNum()) != -1) {
+            Reg sourceReg1 = takeRegOfValue(sourceValue1, Reg.$t8, true);
+            if (targetReg.equals(Reg.$t8)) {
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.sll, Reg.$v1, sourceReg1, CalTool.getPowerOfTwo(((Digit) sourceValue2).getNum())));
+                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$v1, Reg.$sp, valueStackMap.get(targetValue)));
+            } else {
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.sll, targetReg, sourceReg1, CalTool.getPowerOfTwo(((Digit) sourceValue2).getNum())));
+            }
         } else {
-            procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, targetReg, sourceReg1, sourceReg2));
+            Reg sourceReg1 = takeRegOfValue(sourceValue1, Reg.$t8, true);
+            Reg sourceReg2 = takeRegOfValue(sourceValue2, Reg.$t9, true);
+            if (targetReg.equals(Reg.$t8)) {
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, Reg.$v1, sourceReg1, sourceReg2));
+                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$v1, Reg.$sp, valueStackMap.get(targetValue)));
+            } else {
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, targetReg, sourceReg1, sourceReg2));
+            }
         }
+
     }
 
     private void addDivCmd(Value sourceValue1, Value sourceValue2) {

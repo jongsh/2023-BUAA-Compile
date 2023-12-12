@@ -29,10 +29,10 @@ public class FuncFParams extends Node {
         for (Node child : children) {
             child.genIR();
         }
-        BasicBlock basicBlock = IRBuilder.getInstance().newBasicBlock();
-        BrInstr brInstr = IRBuilder.getInstance().newBRInstr(basicBlock);
-        IRBuilder.getInstance().addInstr(brInstr);
-        IRBuilder.getInstance().addBasicBlock(basicBlock);
+//        BasicBlock basicBlock = IRBuilder.getInstance().newBasicBlock();
+//        BrInstr brInstr = IRBuilder.getInstance().newBRInstr(basicBlock);
+//        IRBuilder.getInstance().addInstr(brInstr);
+//        IRBuilder.getInstance().addBasicBlock(basicBlock);
         return null;
     }
 }

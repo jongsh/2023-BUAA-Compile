@@ -61,9 +61,9 @@ public class Function extends User {
         MipsBuilder.getInstance().addNoteCmd("\n# function: " + name);
         MipsBuilder.getInstance().addLabelCmd(name.substring(1));
         MipsBuilder.getInstance().entryFunc(this);
-        int i = (paramList.size() == 0) ? 0 : 1;
-        for (; i < basicBlockList.size(); ++i) {
-            basicBlockList.get(i).toMips();
+
+        for (BasicBlock block : basicBlockList) {
+            block.toMips();
         }
     }
 }
