@@ -10,7 +10,7 @@ import midend.llvmir.value.instr.*;
 import util.CalTool;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class IRBuilder {

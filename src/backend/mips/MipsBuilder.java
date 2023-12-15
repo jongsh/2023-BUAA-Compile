@@ -10,16 +10,16 @@ import util.CalTool;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 
 public class MipsBuilder {
     private static MipsBuilder instance = new MipsBuilder();
     private MipsProcedure procedure;   // mips 汇编程序
-    private HashMap<Value, Reg> valueRegMap;        // value -- reg
-    private HashMap<Value, Integer> valueStackMap;  // value -- stack
+    private LinkedHashMap<Value, Reg> valueRegMap;        // value -- reg
+    private LinkedHashMap<Value, Integer> valueStackMap;  // value -- stack
     private int stackOffset;  // 当前栈偏移($sp)
-    //private HashMap<String, LabelCmd> labelList;
+    //private LinkedHashMap<String, LabelCmd> labelList;
     private RegAllocator regAllocator;
     private ArrayList<Reg> spareRegs = new ArrayList<>(Arrays.asList(
             Reg.$t0, Reg.$t1, Reg.$t2, Reg.$t3, Reg.$t4, Reg.$t5, Reg.$t6, Reg.$t7,
@@ -36,9 +36,9 @@ public class MipsBuilder {
 
     public void reFresh() {
         this.procedure = new MipsProcedure();
-        this.valueRegMap = new HashMap<>();
-        this.valueStackMap = new HashMap<>();
-        //this.labelList = new HashMap<>();
+        this.valueRegMap = new LinkedHashMap<>();
+        this.valueStackMap = new LinkedHashMap<>();
+        //this.labelList = new LinkedHashMap<>();
         this.stackOffset = 0;
         this.regAllocator = new RegAllocator();
     }
@@ -59,8 +59,8 @@ public class MipsBuilder {
         this.stackOffset = regAllocator.getFuncStack(funcName);
     }
 //    public void entryFunc(Function function) {
-//        this.valueRegMap = new HashMap<>();
-//        this.valueStackMap = new HashMap<>();
+//        this.valueRegMap = new LinkedHashMap<>();
+//        this.valueStackMap = new LinkedHashMap<>();
 //        this.stackOffset = 0;
 //
 //        spareRegs = new ArrayList<>(Arrays.asList(
@@ -190,31 +190,20 @@ public class MipsBuilder {
                 // 存寄存器: usedRegsMap + ra
                 HashSet<Reg> usedRegsSet = regAllocator.getFuncUsedRegs("@" + funcName);
                 usedRegsSet.add(Reg.$ra);
-                HashMap<Reg, Integer> storeLocation = new HashMap<>();
+                LinkedHashMap<Reg, Integer> storeLocation = new LinkedHashMap<>();
                 for (Reg reg : usedRegsSet) {
                     procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, reg, Reg.$sp, stackOffset));
                     storeLocation.put(reg, stackOffset);
                     stackOffset -= 4;
                 }
-//                HashMap<Reg, Integer> storedRegs = new HashMap<>();
-//                procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$ra, Reg.$sp, stackOffset));
-//                storedRegs.put(Reg.$ra, stackOffset);
-//                stackOffset -= 4;
-//                ArrayList<Reg> regList = new ArrayList<>(valueRegMap.values());
-//                for (Reg reg : regList) {
-//                    if (!reg.equals(Reg.$v0) && !reg.equals(Reg.$v1) && !storedRegs.containsKey(reg)) {
-//                        procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, reg, Reg.$sp, stackOffset));
-//                        storedRegs.put(reg, stackOffset);
-//                        stackOffset -= 4;
-//                    }
-//                }
+
                 // 函数传参
                 int tempStackOffset = stackOffset;
                 ArrayList<Reg> paramRegList = regAllocator.getFuncParamRegList("@" + funcName);
 
                 ArrayList<Reg> replaceRegList = new ArrayList<>(Arrays.asList(Reg.$t8, Reg.$t9, Reg.$v1));
                 HashSet<Reg> toARegSet = new HashSet<>();
-                HashMap<Reg, Reg> fromARegMap = new HashMap<>();
+                LinkedHashMap<Reg, Reg> fromARegMap = new LinkedHashMap<>();
                 for (int i = 0; i < arguments.size(); ++i) {
                     if (paramRegList.get(i) != null) {
                         toARegSet.add(paramRegList.get(i));  // 记录目标的寄存器
@@ -367,7 +356,7 @@ public class MipsBuilder {
             if (operands.get(i) instanceof Digit && ((Digit) operands.get(i)).getNum() == 0) {
                 continue;
             } else if (operands.get(i) instanceof Digit) {
-                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addu, Reg.$v1, Reg.$v1,
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.addiu, Reg.$v1, Reg.$v1,
                         dimensions.get(i) * ((Digit) operands.get(i)).getNum()));
                 continue;
             }
@@ -485,7 +474,6 @@ public class MipsBuilder {
                 return;
             case "/":
             case "%":
-
                 addDivCmd(sourceValue1, sourceValue2);
                 procedure.addTextCmd(
                         new MfCmd((op.equals("/")) ? MfCmd.MfCmdOp.mflo : MfCmd.MfCmdOp.mfhi, targetReg)
@@ -518,10 +506,10 @@ public class MipsBuilder {
         if (sourceValue1 instanceof Digit && CalTool.getPowerOfTwo(((Digit) sourceValue1).getNum()) != -1) {
             Reg sourceReg2 = takeRegOfValue(sourceValue2, Reg.$t9, true);
             if (targetReg.equals(Reg.$t8)) {
-                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, Reg.$v1, sourceReg2, CalTool.getPowerOfTwo(((Digit) sourceValue1).getNum())));
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.sll, Reg.$v1, sourceReg2, CalTool.getPowerOfTwo(((Digit) sourceValue1).getNum())));
                 procedure.addTextCmd(new MemCmd(MemCmd.MemCmdOp.sw, Reg.$v1, Reg.$sp, valueStackMap.get(targetValue)));
             } else {
-                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.mul, targetReg, sourceReg2, CalTool.getPowerOfTwo(((Digit) sourceValue1).getNum())));
+                procedure.addTextCmd(new AluCmd(AluCmd.AluCmdOp.sll, targetReg, sourceReg2, CalTool.getPowerOfTwo(((Digit) sourceValue1).getNum())));
             }
 
         } else if (sourceValue2 instanceof Digit && CalTool.getPowerOfTwo(((Digit) sourceValue2).getNum()) != -1) {

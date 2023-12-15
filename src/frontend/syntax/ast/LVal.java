@@ -78,6 +78,7 @@ public class LVal extends Node {
         Value targetValue = varSymbol.getLLVMValue();
 
         ArrayList<Value> indexes = new ArrayList<>();
+
         if (((PointerType) targetValue.getValueType()).getTargetType() instanceof ArrayType) {
             indexes.add(IRBuilder.getInstance().newDigit(0));
         } else if (((PointerType) targetValue.getValueType()).getTargetType() instanceof PointerType) {

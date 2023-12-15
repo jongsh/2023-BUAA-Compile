@@ -5,6 +5,6 @@ sum = ( -21 )
 0-1 = 33
 1-0 = -13332
 1-1 = 439956
-input_y = -21373738  input_x * input_y = 21373738
-input_y = -21373738  input_x * input_y = 21373738
+input_y = -21373715  input_x * input_y = 21373715
+input_y = -21373715  input_x * input_y = 21373715
 test2 -- 21373307

@@ -9,18 +9,18 @@ import midend.llvmir.value.instr.IcmpInstr;
 import midend.llvmir.value.instr.Instr;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 
 public class GVN {
     private static Function function;
     private static CFG cfg;
-    private static HashMap<String, Value> valueMap;
+    private static LinkedHashMap<String, Value> valueMap;
 
     public static void simplify(Function f, CFG c) {
         function = f;
         cfg = c;
-        valueMap = new HashMap<>();
+        valueMap = new LinkedHashMap<>();
         BasicBlock entry = function.getBasicBlockList().get(0);
         simplifyDFS(entry);
 

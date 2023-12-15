@@ -1,7 +1,7 @@
 package frontend.semantics.symbol;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class SymbolTable {
     public enum TableType {
@@ -11,13 +11,13 @@ public class SymbolTable {
     private final TableType type;
     private final SymbolTable prev;
     private final ArrayList<SymbolTable> nexts;
-    private final HashMap<String, Symbol> symbols;
+    private final LinkedHashMap<String, Symbol> symbols;
     private final String funcName;   // FUNC、MAIN_FUNC 特有属性
 
     public SymbolTable(TableType type, SymbolTable prev) {
         this.type = type;
         this.prev = prev;
-        this.symbols = new HashMap<>();
+        this.symbols = new LinkedHashMap<>();
         this.nexts = new ArrayList<>();
         this.funcName = null;
     }
@@ -25,7 +25,7 @@ public class SymbolTable {
     public SymbolTable(TableType type, SymbolTable prev, String funcName) {
         this.type = type;
         this.prev = prev;
-        this.symbols = new HashMap<>();
+        this.symbols = new LinkedHashMap<>();
         this.nexts = new ArrayList<>();
         this.funcName = funcName;
     }

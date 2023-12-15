@@ -5,30 +5,30 @@ import midend.llvmir.value.Function;
 import util.CalTool;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 
 public class CFG {
     private final Function function;
     // 控制流程图
-    private final HashMap<BasicBlock, ArrayList<BasicBlock>> cfgNextList;
-    private final HashMap<BasicBlock, ArrayList<BasicBlock>> cfgPrevList;
+    private final LinkedHashMap<BasicBlock, ArrayList<BasicBlock>> cfgNextList;
+    private final LinkedHashMap<BasicBlock, ArrayList<BasicBlock>> cfgPrevList;
     // 支配树
-    private final HashMap<BasicBlock, ArrayList<BasicBlock>> domList;
-    private final HashMap<BasicBlock, ArrayList<BasicBlock>> dtNextList;
-    private final HashMap<BasicBlock, BasicBlock> dtPrevList;
-    private final HashMap<BasicBlock, ArrayList<BasicBlock>> dfList;
+    private final LinkedHashMap<BasicBlock, ArrayList<BasicBlock>> domList;
+    private final LinkedHashMap<BasicBlock, ArrayList<BasicBlock>> dtNextList;
+    private final LinkedHashMap<BasicBlock, BasicBlock> dtPrevList;
+    private final LinkedHashMap<BasicBlock, ArrayList<BasicBlock>> dfList;
 
     public CFG(Function function) {
-        this.cfgNextList = new HashMap<>();
-        this.cfgPrevList = new HashMap<>();
-        this.dtNextList = new HashMap<>();
-        this.dtPrevList = new HashMap<>();
-        this.domList = new HashMap<>();
-        this.dfList = new HashMap<>();
+        this.cfgNextList = new LinkedHashMap<>();
+        this.cfgPrevList = new LinkedHashMap<>();
+        this.dtNextList = new LinkedHashMap<>();
+        this.dtPrevList = new LinkedHashMap<>();
+        this.domList = new LinkedHashMap<>();
+        this.dfList = new LinkedHashMap<>();
         this.function = function;
         init();
-        clearDeadBlock(); //     // 删除不可达的 block
+        clearDeadBlock();        // 删除不可达的 block
         genDom();                // 生成严格支配集合
         genDT();                 // 生成支配树
         genDF();                 // 生成支配边界集合
@@ -83,9 +83,6 @@ public class CFG {
     private void genDom() {
         ArrayList<BasicBlock> total = function.getBasicBlockList();
         for (BasicBlock block : total) {
-            if (block.getName().equals("block_19")) {
-                int m = 1;
-            }
             ArrayList<BasicBlock> record = new ArrayList<>();
             record.add(total.get(0));  // 入口块
             record.add(block);         // 目标块

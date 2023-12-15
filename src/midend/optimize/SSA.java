@@ -18,7 +18,7 @@ public class SSA {
     public static void transToSSA(Function f, CFG c) {
         function = f;
         cfg = c;
-        HashMap<Value, Stack<Value>> varValueMap = new HashMap<>();
+        LinkedHashMap<Value, Stack<Value>> varValueMap = new LinkedHashMap<>();
         HashSet<BasicBlock> defBlocks = new HashSet<>();
         // 遍历函数的每个 alloca 定义，转化成 SSA
         for (BasicBlock block : function.getBasicBlockList()) {
@@ -67,9 +67,9 @@ public class SSA {
         }
     }
 
-    private static void dfsToRename(BasicBlock curBlock, HashMap<Value, Stack<Value>> varValueMap) {
+    private static void dfsToRename(BasicBlock curBlock, LinkedHashMap<Value, Stack<Value>> varValueMap) {
         // 遍历当前块的指令，更新 map 信息
-        HashMap<Value, Integer> cntMap = new HashMap<>();
+        LinkedHashMap<Value, Integer> cntMap = new LinkedHashMap<>();
         ArrayList<Instr> instrList = curBlock.getInstrList();
         for (int i = 0; i < instrList.size(); ++i) {
             Instr curInstr = instrList.get(i);
@@ -153,8 +153,8 @@ public class SSA {
 
     // 初始化PC指令
     private static void phiToPc(BasicBlock entry) {
-        HashMap<BasicBlock, BasicBlock> oldNewMap = new HashMap<>();
-        HashMap<BasicBlock, ArrayList<Instr>> records = new HashMap<>();
+        LinkedHashMap<BasicBlock, BasicBlock> oldNewMap = new LinkedHashMap<>();
+        LinkedHashMap<BasicBlock, ArrayList<Instr>> records = new LinkedHashMap<>();
 
         // 初始化 map
         for (BasicBlock prevBlock : cfg.getCFGFatherList(entry)) {

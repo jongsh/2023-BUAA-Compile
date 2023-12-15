@@ -7,33 +7,33 @@ import midend.llvmir.value.*;
 import midend.llvmir.value.instr.AllocaInstr;
 import midend.llvmir.value.instr.IcmpInstr;
 import midend.llvmir.value.instr.Instr;
+import midend.llvmir.value.instr.ZextInstr;
 import midend.optimize.CFG;
 import util.CalTool;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
 
 public class RegAllocator {
     public static class AllocaRecord {
         private final ArrayList<Reg> paramRegList;      // 函数形参的寄存器分配
-        private final HashMap<Value, Reg> valueRegMap;        // value -- reg
-        private final HashMap<Value, Integer> valueStackMap;  // value -- stack
+        private final LinkedHashMap<Value, Reg> valueRegMap;        // value -- reg
+        private final LinkedHashMap<Value, Integer> valueStackMap;  // value -- stack
         private int stackOffset;  // 当前栈偏移($sp)
-        private final ArrayList<Reg> spareRegs;
-        private final HashSet<Reg> spareRegsRec;
+        private ArrayList<Reg> spareRegs;
 
         public AllocaRecord() {
             this.stackOffset = 0;
             this.paramRegList = new ArrayList<>();
-            this.valueRegMap = new HashMap<>();
-            this.valueStackMap = new HashMap<>();
+            this.valueRegMap = new LinkedHashMap<>();
+            this.valueStackMap = new LinkedHashMap<>();
             this.spareRegs = new ArrayList<>(Arrays.asList(
+                    Reg.$k0, Reg.$k1,
                     Reg.$t0, Reg.$t1, Reg.$t2, Reg.$t3, Reg.$t4, Reg.$t5, Reg.$t6, Reg.$t7,
                     Reg.$s0, Reg.$s1, Reg.$s2, Reg.$s3, Reg.$s4, Reg.$s5, Reg.$s6, Reg.$s7,
                     Reg.$a3, Reg.$a2, Reg.$a1));
-            this.spareRegsRec = new HashSet<>(spareRegs);
         }
 
         public void addValue(Value value) {
@@ -49,11 +49,6 @@ public class RegAllocator {
             }
         }
 
-        public void addValue(Value value, Reg reg) {
-            valueRegMap.put(value, reg);
-            spareRegs.remove(reg);
-        }
-
         public void addParam(Value param, boolean isToReg) {
             if (isToReg) {
                 valueRegMap.put(param, spareRegs.get(spareRegs.size() - 1));
@@ -66,30 +61,47 @@ public class RegAllocator {
             }
         }
 
-        public Reg release(Value value) {
+        public void release(Value value) {
             if (valueRegMap.containsKey(value)) {
                 if (!spareRegs.contains(valueRegMap.get(value))) {
                     spareRegs.add(valueRegMap.get(value));
                 }
-                return valueRegMap.get(value);
-            } else {
-                return null;
             }
         }
 
-        public void maintain() {
-
+        public void maintain(HashSet<Value> stores) {
+            HashSet<Reg> storedRegs = new HashSet<>();
+            // 统计哪些寄存器需要保存的
+            for (Value storeValue : stores) {
+                if (valueRegMap.containsKey(storeValue)) {
+                    storedRegs.add(valueRegMap.get(storeValue));
+                }
+            }
+            // 不需要的寄存器释放
+            for (Value value : valueRegMap.keySet()) {
+                if (!storedRegs.contains(valueRegMap.get(value))) {
+                    release(value);
+                }
+            }
+            // 需要的寄存器保留
+            ArrayList<Reg> newSpareRegs = new ArrayList<>();
+            for (Reg spareReg : spareRegs) {
+                if (!storedRegs.contains(spareReg)) {
+                    newSpareRegs.add(spareReg);
+                }
+            }
+            this.spareRegs = newSpareRegs;
         }
 
         public ArrayList<Reg> getParamRegList() {
             return paramRegList;
         }
 
-        public HashMap<Value, Reg> getValueRegMap() {
+        public LinkedHashMap<Value, Reg> getValueRegMap() {
             return valueRegMap;
         }
 
-        public HashMap<Value, Integer> getValueStackMap() {
+        public LinkedHashMap<Value, Integer> getValueStackMap() {
             return valueStackMap;
         }
 
@@ -98,16 +110,16 @@ public class RegAllocator {
         }
     }
 
-    private final HashMap<String, AllocaRecord> funcRecMaps;
+    private final LinkedHashMap<String, AllocaRecord> funcRecMaps;
     // 中间值
     private Function curFunction;
     private CFG curCFG;
-    private HashMap<Instr, HashSet<Value>> curInstrActiveRec;
-    private HashMap<BasicBlock, HashSet<Value>> curBlockActiveRec;
+    private LinkedHashMap<Instr, HashSet<Value>> curInstrActiveRec;
+    private LinkedHashMap<BasicBlock, HashSet<Value>> curBlockActiveRec;
     private HashSet<Value> entryActiveRec;
 
     public RegAllocator() {
-        this.funcRecMaps = new HashMap<>();
+        this.funcRecMaps = new LinkedHashMap<>();
     }
 
     public void alloca(Module module) {
@@ -116,8 +128,8 @@ public class RegAllocator {
             funcRecMaps.put(function.getName(), new AllocaRecord());
             curFunction = function;
             curCFG = new CFG(function);
-            curInstrActiveRec = new HashMap<>();
-            curBlockActiveRec = new HashMap<>();
+            curInstrActiveRec = new LinkedHashMap<>();
+            curBlockActiveRec = new LinkedHashMap<>();
             entryActiveRec = new HashSet<>();
 
             // 数据流分析
@@ -136,33 +148,46 @@ public class RegAllocator {
     private void allocaRegs(Function function) {
         ArrayList<Param> params = function.getParamList();
         ArrayList<BasicBlock> blockList = function.getBasicBlockList();
-        ArrayList<Instr> instrList = new ArrayList<>();
-        for (BasicBlock block : blockList) {
-            instrList.addAll(block.getInstrList());
-        }
         // 函数入口为param分配寄存器
         for (int i = 0; i < params.size(); ++i) {
             funcRecMaps.get(function.getName()).addParam(params.get(i), i < 3);
         }
-
-        for (Instr instr : instrList) {
-            if (instr instanceof IcmpInstr || instr.getName().equals("")) {
-                continue;
-            }
-            if (instr instanceof AllocaInstr &&
-                    ((PointerType) instr.getValueType()).getTargetType() instanceof ArrayType) {
-                continue;
-            }
-            Reg backup = null;
-            for (Value used : instr.getOperands()) {
-                if (used instanceof Instr && !curInstrActiveRec.get(instr).contains(used)) {
-                    backup = funcRecMaps.get(function.getName()).release(used);
+        for (BasicBlock block : blockList) {
+            ArrayList<Instr> instrList = block.getInstrList();
+            for (int i = 0; i < instrList.size(); ++i) {
+                Instr instr = instrList.get(i);
+                if (i == 0) {
+                    funcRecMaps.get(function.getName()).maintain(CalTool.add(
+                            curInstrActiveRec.get(instr), new HashSet<>(instr.getOperands()))
+                    );
+                } else {
+                    for (Value used : instr.getOperands()) {
+                        if (used instanceof Instr && !curInstrActiveRec.get(instr).contains(used)) {
+                            funcRecMaps.get(function.getName()).release(used);
+                        }
+                    }
                 }
-            }
-            if (backup != null) {
-                funcRecMaps.get(function.getName()).addValue(instr, backup);
-            } else {
-                funcRecMaps.get(function.getName()).addValue(instr);
+                if (instr instanceof IcmpInstr) {
+                    continue;
+                }
+                if (instr instanceof AllocaInstr &&
+                        ((PointerType) instr.getValueType()).getTargetType() instanceof ArrayType) {
+                    continue;
+                }
+                if (i == 0) {
+                    funcRecMaps.get(function.getName()).maintain(CalTool.add(
+                            curInstrActiveRec.get(instr), new HashSet<>(instr.getOperands()))
+                    );
+                } else {
+                    for (Value used : instr.getOperands()) {
+                        if (used instanceof Instr && !curInstrActiveRec.get(instr).contains(used)) {
+                            funcRecMaps.get(function.getName()).release(used);
+                        }
+                    }
+                }
+                if (!instr.getName().equals("")) {
+                    funcRecMaps.get(function.getName()).addValue(instr);
+                }
             }
         }
     }
@@ -177,6 +202,10 @@ public class RegAllocator {
             HashSet<Value> used = new HashSet<>(instrList.get(i).getOperands());
             if (instrList.get(i).getName().equals("")) {
                 in = CalTool.add(used, out);
+            } else if (instrList.get(i) instanceof ZextInstr) {
+                IcmpInstr icmpInstr = (IcmpInstr) instrList.get(i).getOperands().get(0);
+                used.addAll(icmpInstr.getOperands());
+                in = CalTool.add(used, CalTool.sub(out, instrList.get(i)));
             } else {
                 in = CalTool.add(used, CalTool.sub(out, instrList.get(i)));
             }
@@ -201,11 +230,11 @@ public class RegAllocator {
         return funcRecMaps.get(funcName).getParamRegList();
     }
 
-    public HashMap<Value, Reg> getFuncRegMap(String funcName) {
+    public LinkedHashMap<Value, Reg> getFuncRegMap(String funcName) {
         return funcRecMaps.get(funcName).getValueRegMap();
     }
 
-    public HashMap<Value, Integer> getFuncStackMap(String funcName) {
+    public LinkedHashMap<Value, Integer> getFuncStackMap(String funcName) {
         return funcRecMaps.get(funcName).getValueStackMap();
     }
 

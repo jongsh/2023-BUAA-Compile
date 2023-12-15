@@ -31,11 +31,11 @@ int main()
 		{
 			flag=1;
 			printf("0\n");
-			
-		
+
+
 		}
 		i=i+1;
-	
+
 	}
 
 	c=jian();
@@ -44,18 +44,18 @@ int main()
 	e=c*2;
 	if(e<5)
 	{
-	
+
 		f=c%2;
 	}
 	else f=c/2;
-	
+
 	if(f!=!3)
 	g=g+1;
-	
+
 	o=i+(j+1);
 
 	{}
-	;	
+	;
 	for(;0;)
 	{
 		continue;
@@ -76,15 +76,15 @@ int main()
 					{
 						a=1;
 					}
-						
-					
+
+
 				}
-			
+
 			}
 		}
 	}
 	keke(a,b);
-	
+
 	printf("%d\n%d\n%d\n%d\n",d,e,f,g);
 	printf("19182620\n");
 	printf("19182620\n");

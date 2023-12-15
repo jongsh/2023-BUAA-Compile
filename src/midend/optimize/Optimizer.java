@@ -3,13 +3,13 @@ package midend.optimize;
 import midend.llvmir.value.Function;
 import midend.llvmir.value.Module;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class Optimizer {
-    private static HashMap<Function, CFG> cfgMaps;
+    private static LinkedHashMap<Function, CFG> cfgMaps;
 
     public static void optimize(Module module) {
-        cfgMaps = new HashMap<>();
+        cfgMaps = new LinkedHashMap<>();
         for (Function function : module.getFunctionList()) {
             CFG cfg = new CFG(function);
             cfgMaps.put(function, cfg);
