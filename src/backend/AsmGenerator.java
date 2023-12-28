@@ -18,10 +18,10 @@ public class AsmGenerator {
 
     public MipsProcedure genMips(Module module) {
         // 消除 Phi
-//        for (Function function : module.getFunctionList()) {
-//            CFG cfg = new CFG(function);
-//            SSA.eliminatePhi(function, cfg);
-//        }
+        for (Function function : module.getFunctionList()) {
+            CFG cfg = new CFG(function);
+            SSA.eliminatePhi(function, cfg);
+        }
         // 新建 mips 程序
         MipsBuilder.getInstance().reFresh();
         // 中间代码转 mips

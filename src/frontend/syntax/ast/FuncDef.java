@@ -27,8 +27,7 @@ public class FuncDef extends Node {
         if (SymbolManager.instance().getFuncSymbol(identName) != null ||
                 SymbolManager.instance().getVarSymbol(identName, false) != null) {
             error.append(children.get(1).getLine()).append(" b\n");
-            SymbolManager.instance().createTable(SymbolTable.TableType.FUNC, false, identName);
-            SymbolManager.instance().addFuncSymbol(identName);
+            return error.toString();
         } else {
             SymbolManager.instance().addFuncSymbol(identName);
             SymbolManager.instance().createTable(SymbolTable.TableType.FUNC, true, identName);

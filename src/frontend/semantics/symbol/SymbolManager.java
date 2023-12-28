@@ -123,7 +123,11 @@ public class SymbolManager {
         return false;
     }
 
-    public FuncSymbol getCurTableFuncSymbol() {
+    /**
+     * curTable 是函数类型，找到对应的函数符号定义
+     */
+    public FuncSymbol getFuncSymbolOfCurTable() {
         return getFuncSymbol(curTable.getFuncName());
     }
+
 }

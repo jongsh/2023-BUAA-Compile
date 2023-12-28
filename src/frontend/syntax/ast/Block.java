@@ -26,7 +26,7 @@ public class Block extends Node {
             Node forNode = children.get(children.size() - 2).searchNode(SyntaxType.FORTK);
             Node blockNode = children.get(children.size() - 2).searchNode(SyntaxType.Block);
 
-            if (SymbolManager.instance().getCurTableFuncSymbol().getType().equals("void")) {
+            if (SymbolManager.instance().getFuncSymbolOfCurTable().getType().equals("void")) {
                 if (returnNode != null && exp != null && ifNode == null && forNode == null && blockNode == null) {
                     error.append(returnNode.getLine()).append(" f\n");
                 }

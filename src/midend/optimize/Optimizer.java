@@ -20,7 +20,7 @@ public class Optimizer {
             // 死代码删除
             DeadCodeRemover.deleteDeadInstr(function);
             // 消除 Phi
-            SSA.eliminatePhi(function, cfg);
+            //SSA.eliminatePhi(function, cfg);
         }
 
     }

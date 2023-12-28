@@ -21,7 +21,7 @@ public class FuncRParams extends Node {
             error.append(child.checkError());
         }
         if (error.length() == 0) {
-            FuncSymbol funcSymbol = SymbolManager.instance().getCurTableFuncSymbol();
+            FuncSymbol funcSymbol = SymbolManager.instance().getFuncSymbolOfCurTable();
             ArrayList<ArrayList<Integer>> params = funcSymbol.getParams();
             if (children.size() / 2 + 1 != params.size()) {
                 error.append(children.get(0).getLine()).append(" d\n");

@@ -12,11 +12,12 @@ public class SemanticAnalyzer {
         this.ast = ast;
     }
 
-    public String CheckError() {
+    public String checkError() {
         return ast.checkError();
     }
 
     public Module genIR() {
+        SymbolManager.instance().reset();
         ast.genIR();
         return IRBuilder.getInstance().getModule();
     }
@@ -25,26 +26,12 @@ public class SemanticAnalyzer {
      * 语义分析：综合错误处理与中间代码生成的过程
      */
     public Module analyse() {
-        String str = CheckError();
+        String str = checkError();
         if (str.equals("")) {
             SymbolManager.instance().reset();
             return genIR();
         }
         System.out.println(str);
         throw new Error("源程序出现错误");
-    }
-
-    /**
-     * 测试错误处理
-     */
-    public String testCheckError() {
-        return CheckError();
-    }
-
-    /**
-     * 测试中间代码生成，默认源程序无错误
-     */
-    public String testGenIR() {
-        return genIR().toString();
     }
 }
